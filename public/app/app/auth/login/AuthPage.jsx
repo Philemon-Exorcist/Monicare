@@ -35,19 +35,19 @@ export default function AuthPage() {
 
         await submitAuth(
           {
-            first_name: fullName,
-            last_name: lastName,
-            email,
-            phone_no: phone,
+            first_name: fullName.trim(),
+            last_name: lastName.trim(),
+            email: email.trim(),
+            phone_no: phone.trim(),
             password,
-            bvn,
-            nin,
+            bvn: bvn.trim(),
+            nin: nin.trim(),
             dob,
           },
           mode
         );
       } else {
-        await submitAuth({ phone_no: phone, password }, mode);
+        await submitAuth({ phone_no: phone.trim(), password }, mode);
       }
 
       router.push("/");

@@ -1,5 +1,7 @@
 
-from fastapi import FastAPI,Request
+from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 import logging
 import time
 import os
@@ -30,6 +32,20 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"]
 )
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    logger.warning(
+        "Request validation failed for %s %s: %s",
+        request.method,
+        request.url.path,
+        exc.errors(),
+    )
+    return JSONResponse(
+        status_code=422,
+        content={"detail": exc.errors()},
+    )
 
 
 @app.middleware("http")
@@ -81,7 +97,6 @@ if __name__ == "__main__":
 
     print(f"Booting server on port {port} | Production Mode: {is_cloud_run or is_render}")
     uvicorn.run("main:app", host="0.0.0.0", port=port, reload=reload_setting)
-
 
 
 

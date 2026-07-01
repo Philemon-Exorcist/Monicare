@@ -19,29 +19,30 @@ class UserAuthCredentials(BaseModel):
     @classmethod
     def validate_nigerian_phone(cls, value: str) -> str:
         """
-        Security Guard: Strips whitespace and validates against standard Nigerian
-        mobile number formats.
+        Normalizes common Nigerian phone formats and validates the final digits.
         """
-        cleaned_phone = value.strip()
+        cleaned_phone = str(value).strip()
+        normalized_phone = re.sub(r"[\s\-\.\(\)]", "", cleaned_phone)
 
-        if not cleaned_phone.isdigit():
-            raise ValueError("Phone number must contain only digits.")
+        if normalized_phone.startswith("+"):
+            normalized_phone = normalized_phone[1:]
+
+        if not normalized_phone.isdigit():
+            raise ValueError(
+                "Phone number must contain only digits after removing spaces, dashes, and parentheses."
+            )
 
         local_regex = r"^0[789][01]\d{8}$"
         intl_regex = r"^234[789][01]\d{8}$"
 
-        if re.fullmatch(local_regex, cleaned_phone):
-            if len(cleaned_phone) != 11:
-                raise ValueError("Local Nigerian phone number must be exactly 11 digits.")
-            return cleaned_phone
+        if re.fullmatch(local_regex, normalized_phone):
+            return normalized_phone
 
-        if re.fullmatch(intl_regex, cleaned_phone):
-            if len(cleaned_phone) != 13:
-                raise ValueError("International Nigerian phone number must be exactly 13 digits.")
-            return cleaned_phone
+        if re.fullmatch(intl_regex, normalized_phone):
+            return normalized_phone
 
         raise ValueError(
-            "Invalid Nigerian phone number format. Use 11 digits starting with 0 or 13 digits starting with 234."
+            "Invalid Nigerian phone number format. Use 080..., 070..., 090... or +234/234 variants."
         )
 
 
@@ -87,7 +88,7 @@ class UserSignUpPayload(UserAuthCredentials):
         if v is None:
             return v
 
-        cleaned_value = v.strip()
+        cleaned_value = re.sub(r"[\s\-\.\(\)]", "", str(v).strip())
         if not cleaned_value.isdigit():
             raise ValueError("Identity numbers must contain only digits.")
         if len(cleaned_value) != 11:
@@ -106,7 +107,7 @@ class UserSignUpPayload(UserAuthCredentials):
             return value
             
         # 1. Clean accidental lead/trail spaces
-        cleaned_value = value.strip()
+        cleaned_value = str(value).strip()
         
         # 2. Regular Expression: Allows only letters, spaces, hyphens, and apostrophes
         # This completely filters out characters like ;, --, =, <, > used in hacking attacks
