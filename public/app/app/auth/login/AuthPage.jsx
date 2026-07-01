@@ -52,7 +52,14 @@ export default function AuthPage() {
 
       router.push("/");
     } catch (error) {
-      setError(error?.message || "Unable to connect to backend.");
+      const message =
+        typeof error?.message === "string"
+          ? error.message
+          : typeof error === "string"
+            ? error
+            : "Unable to connect to backend.";
+
+      setError(message);
     } finally {
       setIsLoading(false);
     }
@@ -136,52 +143,12 @@ export default function AuthPage() {
                 </div>
               )}
               {mode === "signup" && (
-<<<<<<< HEAD
-                <div className="space-y-3 mt-2">
-                  <div>
-                    <label htmlFor="phone" className="block text-sm font-medium text-slate-400 mb-1 ml-4">Phone Number</label>
-=======
                 <div className="mt-2 grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <div>
                     <label htmlFor="bvn" className="mb-1 ml-4 block text-sm font-medium text-slate-400">BVN</label>
->>>>>>> 28f2861cb42c98d0a2f49f6ab7ceaf6134ea5b83
                     <input
-                      id="phone"
+                      id="bvn"
                       required
-<<<<<<< HEAD
-                      type="tel"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      placeholder="Phone number"
-                      className="w-full rounded-full bg-slate-800 px-4 py-3 text-sm text-white placeholder:text-slate-500 outline-none"
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label htmlFor="bvn" className="block text-sm font-medium text-slate-400 mb-1 ml-4">BVN</label>
-                      <input
-                        id="bvn"
-                        required
-                        type="text"
-                        value={bvn}
-                        onChange={(e) => setBvn(e.target.value)}
-                        placeholder="BVN"
-                        className="w-full rounded-full bg-slate-800 px-4 py-3 text-sm text-white placeholder:text-slate-500 outline-none"
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor="nin" className="block text-sm font-medium text-slate-400 mb-1 ml-4">NIN</label>
-                      <input
-                        id="nin"
-                        required
-                        type="text"
-                        value={nin}
-                        onChange={(e) => setNin(e.target.value)}
-                        placeholder="NIN"
-                        className="w-full rounded-full bg-slate-800 px-4 py-3 text-sm text-white placeholder:text-slate-500 outline-none"
-                      />
-                    </div>
-=======
                       type="text"
                       value={bvn}
                       onChange={(e) => setBvn(e.target.value)}
@@ -200,7 +167,6 @@ export default function AuthPage() {
                       placeholder="NIN"
                       className="w-full rounded-full bg-slate-800 px-4 py-2.5 text-sm text-white placeholder:text-slate-500 outline-none"
                     />
->>>>>>> 28f2861cb42c98d0a2f49f6ab7ceaf6134ea5b83
                   </div>
                 </div>
               )}
@@ -243,25 +209,6 @@ export default function AuthPage() {
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="Phone number"
-<<<<<<< HEAD
-                    className="w-full rounded-full bg-slate-800 px-4 py-3 text-sm text-white placeholder:text-slate-500 outline-none"
-                  />
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  <div>
-                    <label htmlFor="email" className="block text-sm font-medium text-slate-400 mb-1 ml-4">Email</label>
-                    <input
-                      id="email"
-                      required
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="Enter Your Email"
-                      className="w-full rounded-full bg-slate-800 px-4 py-3 text-sm text-white placeholder:text-slate-500 outline-none"
-                    />
-                  </div>
-=======
                     className="w-full rounded-full bg-slate-800 px-4 py-2.5 text-sm text-white placeholder:text-slate-500 outline-none"
                   />
                 </div>
@@ -277,7 +224,6 @@ export default function AuthPage() {
                     placeholder="Enter Your Email"
                     className="w-full rounded-full bg-slate-800 px-4 py-2.5 text-sm text-white placeholder:text-slate-500 outline-none"
                   />
->>>>>>> 28f2861cb42c98d0a2f49f6ab7ceaf6134ea5b83
                 </div>
               )}
 

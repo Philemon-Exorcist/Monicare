@@ -61,28 +61,38 @@ class UserSignUpPayload(UserAuthCredentials):
     @field_validator("dob")
     @classmethod
     def validate_dob(cls, value: str) -> str:
-        """Accepts the frontend's MM/DD/YYYY format and validates the age."""
+        """Accepts the frontend's date input plus MM/DD/YYYY strings and validates the age."""
+        if not isinstance(value, str):
+            value = str(value)
+
+        cleaned_value = value.strip()
+
         try:
-            parsed_date = datetime.strptime(value, "%m/%d/%Y").date()
-        except ValueError as exc:
-            raise ValueError("Date of birth must be in MM/DD/YYYY format.") from exc
+            parsed_date = datetime.strptime(cleaned_value, "%Y-%m-%d").date()
+        except ValueError:
+            try:
+                parsed_date = datetime.strptime(cleaned_value, "%m/%d/%Y").date()
+            except ValueError as exc:
+                raise ValueError("Date of birth must be in YYYY-MM-DD or MM/DD/YYYY format.") from exc
 
         today = date.today()
         age = today.year - parsed_date.year - ((today.month, today.day) < (parsed_date.month, parsed_date.day))
         if age < 18:
             raise ValueError("You must be at least 18 years old to sign up.")
-        return value
+        return cleaned_value
 
     @field_validator("bvn", "nin")
     @classmethod
     def validate_numeric_ids(cls, v: str | None) -> str | None:
         if v is None:
             return v
-        if not v.isdigit():
+
+        cleaned_value = v.strip()
+        if not cleaned_value.isdigit():
             raise ValueError("Identity numbers must contain only digits.")
-        if len(v) != 11:
+        if len(cleaned_value) != 11:
             raise ValueError("Identity numbers must be exactly 11 digits long.")
-        return v
+        return cleaned_value
     
 
     @field_validator("first_name", "middle_name", "last_name")
