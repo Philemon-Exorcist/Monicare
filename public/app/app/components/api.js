@@ -32,3 +32,8 @@ export function login(payload) {
 export function signup(payload) {
   return request("/api/v1/signup", "POST", payload);
 }
+
+export function submitAuth(payload, mode) {
+  const endpoint = mode === "signup" ? "/api/v1/signup" : "/api/v1/login";
+  return request(endpoint, "POST", payload);
+}
