@@ -36,15 +36,45 @@ app.add_middleware(
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    errors = exc.errors()
+    readable_errors = []
+
+    for error in errors:
+        location = error.get("loc", [])
+        field = location[-1] if location else "field"
+        error_type = error.get("type", "")
+        message = error.get("msg", "Invalid value.")
+
+        if error_type == "string_too_long" and error.get("ctx", {}).get("max_length"):
+            message = f"{field} must be at most {error['ctx']['max_length']} characters long."
+        elif error_type == "string_too_short" and error.get("ctx", {}).get("min_length"):
+            message = f"{field} must be at least {error['ctx']['min_length']} characters long."
+        elif error_type == "value_error":
+            message = message.replace("Value error, ", "")
+
+        readable_errors.append({
+            "field": field,
+            "message": message,
+            "type": error_type,
+        })
+
+    friendly_message = "Please fix the highlighted form fields and try again."
+    if readable_errors:
+        friendly_message = " ".join(item["message"] for item in readable_errors)
+
     logger.warning(
         "Request validation failed for %s %s: %s",
         request.method,
         request.url.path,
-        exc.errors(),
+        errors,
     )
     return JSONResponse(
         status_code=422,
-        content={"detail": exc.errors()},
+        content={
+            "message": friendly_message,
+            "errors": readable_errors,
+            "detail": errors,
+        },
     )
 
 
@@ -97,7 +127,6 @@ if __name__ == "__main__":
 
     print(f"Booting server on port {port} | Production Mode: {is_cloud_run or is_render}")
     uvicorn.run("main:app", host="0.0.0.0", port=port, reload=reload_setting)
-
 
 
 

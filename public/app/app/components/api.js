@@ -2,20 +2,29 @@ const BASE_URL = (process.env.NEXT_PUBLIC_API_BASE_URL || "https://monicare.onre
 
 function humanizeValidationError(detail) {
   if (Array.isArray(detail) && detail.length > 0) {
-    const first = detail[0];
-    const field = Array.isArray(first?.loc) ? first.loc[first.loc.length - 1] : "field";
+    const messages = detail.map((entry) => {
+      const field = Array.isArray(entry?.loc) ? entry.loc[entry.loc.length - 1] : "field";
 
-    if (first?.type === "string_too_long" && first?.ctx?.max_length) {
-      return `${field.toUpperCase()} must be at most ${first.ctx.max_length} characters long.`;
-    }
+      if (entry?.type === "string_too_long" && entry?.ctx?.max_length) {
+        return `${field.toUpperCase()} must be at most ${entry.ctx.max_length} characters long.`;
+      }
 
-    if (first?.type === "string_too_short" && first?.ctx?.min_length) {
-      return `${field.toUpperCase()} must be at least ${first.ctx.min_length} characters long.`;
-    }
+      if (entry?.type === "string_too_short" && entry?.ctx?.min_length) {
+        return `${field.toUpperCase()} must be at least ${entry.ctx.min_length} characters long.`;
+      }
 
-    if (typeof first?.msg === "string") {
-      return `${field.toUpperCase()}: ${first.msg}`;
-    }
+      if (entry?.type === "value_error" && typeof entry?.msg === "string") {
+        return `${field.toUpperCase()}: ${entry.msg.replace(/^Value error,\s*/i, "")}`;
+      }
+
+      if (typeof entry?.msg === "string") {
+        return `${field.toUpperCase()}: ${entry.msg}`;
+      }
+
+      return `${field.toUpperCase()} is invalid.`;
+    });
+
+    return messages.join(" ");
   }
 
   if (typeof detail === "string") {
@@ -42,7 +51,8 @@ async function request(path, method = "POST", body = {}) {
     const message =
       typeof responseData === "string"
         ? responseData
-        : humanizeValidationError(responseData?.detail || responseData?.message || responseData?.error);
+        : responseData?.message ||
+          humanizeValidationError(responseData?.errors || responseData?.detail || responseData?.error);
 
     throw new Error(typeof message === "string" ? message : JSON.stringify(message));
   }

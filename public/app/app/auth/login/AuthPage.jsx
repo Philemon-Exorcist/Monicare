@@ -22,6 +22,27 @@ export default function AuthPage() {
   const [error, setError] = useState("");
   const router = useRouter();
 
+  const maxDobDate = () => {
+    const cutoff = new Date();
+    cutoff.setFullYear(cutoff.getFullYear() - 18);
+    return cutoff.toISOString().split("T")[0];
+  };
+
+  const isAtLeast18 = (value) => {
+    if (!value) return false;
+    const dobDate = new Date(`${value}T00:00:00`);
+    if (Number.isNaN(dobDate.getTime())) return false;
+
+    const today = new Date();
+    let age = today.getFullYear() - dobDate.getFullYear();
+    const monthDiff = today.getMonth() - dobDate.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dobDate.getDate())) {
+      age -= 1;
+    }
+
+    return age >= 18;
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     setIsLoading(true);
@@ -31,6 +52,18 @@ export default function AuthPage() {
       if (mode === "signup") {
         if (password !== repeatPassword) {
           throw new Error("Passwords do not match.");
+        }
+
+        if (bvn.trim().length !== 11) {
+          throw new Error("BVN must be exactly 11 digits.");
+        }
+
+        if (nin.trim().length !== 11) {
+          throw new Error("NIN must be exactly 11 digits.");
+        }
+
+        if (!isAtLeast18(dob)) {
+          throw new Error("You must be at least 18 years old to sign up.");
         }
 
         await submitAuth(
@@ -185,6 +218,7 @@ export default function AuthPage() {
                       required
                       type="date"
                       value={dob}
+                      max={maxDobDate()}
                       onChange={(e) => setDob(e.target.value)}
                       placeholder="Date of Birth"
                       className="w-full rounded-full bg-slate-800 px-4 py-2.5 text-sm text-white placeholder:text-slate-500 outline-none appearance-none"
