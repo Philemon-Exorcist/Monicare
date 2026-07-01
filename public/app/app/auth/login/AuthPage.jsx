@@ -131,46 +131,44 @@ export default function AuthPage() {
                 </div>
               )}
               {mode === "signup" && (
-                <div className="grid grid-cols-2 gap-3 mt-2">
-                  <input
-                    required
-                    type="text"
-                    value={bvn}
-                    onChange={(e) => setBvn(e.target.value)}
-                    placeholder="BVN"
-                    className="rounded-full bg-slate-800 px-4 py-3 text-sm text-white placeholder:text-slate-500 outline-none"
-                  />
-                  <input
-                    required
-                    type="text"
-                    value={nin}
-                    onChange={(e) => setNin(e.target.value)}
-                    placeholder="NIN"
-                    className="rounded-full bg-slate-800 px-4 py-3 text-sm text-white placeholder:text-slate-500 outline-none"
-                  />
+                <div className="space-y-3 mt-2">
                   <div>
-                    <label htmlFor="bvn" className="block text-sm font-medium text-slate-400 mb-1 ml-4">BVN</label>
+                    <label htmlFor="phone" className="block text-sm font-medium text-slate-400 mb-1 ml-4">Phone Number</label>
                     <input
-                      id="bvn"
+                      id="phone"
                       required
-                      type="text"
-                      value={bvn}
-                      onChange={(e) => setBvn(e.target.value)}
-                      placeholder="BVN"
+                      type="tel"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      placeholder="Phone number"
                       className="w-full rounded-full bg-slate-800 px-4 py-3 text-sm text-white placeholder:text-slate-500 outline-none"
                     />
                   </div>
-                  <div>
-                    <label htmlFor="nin" className="block text-sm font-medium text-slate-400 mb-1 ml-4">NIN</label>
-                    <input
-                      id="nin"
-                      required
-                      type="text"
-                      value={nin}
-                      onChange={(e) => setNin(e.target.value)}
-                      placeholder="NIN"
-                      className="w-full rounded-full bg-slate-800 px-4 py-3 text-sm text-white placeholder:text-slate-500 outline-none"
-                    />
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label htmlFor="bvn" className="block text-sm font-medium text-slate-400 mb-1 ml-4">BVN</label>
+                      <input
+                        id="bvn"
+                        required
+                        type="text"
+                        value={bvn}
+                        onChange={(e) => setBvn(e.target.value)}
+                        placeholder="BVN"
+                        className="w-full rounded-full bg-slate-800 px-4 py-3 text-sm text-white placeholder:text-slate-500 outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="nin" className="block text-sm font-medium text-slate-400 mb-1 ml-4">NIN</label>
+                      <input
+                        id="nin"
+                        required
+                        type="text"
+                        value={nin}
+                        onChange={(e) => setNin(e.target.value)}
+                        placeholder="NIN"
+                        className="w-full rounded-full bg-slate-800 px-4 py-3 text-sm text-white placeholder:text-slate-500 outline-none"
+                      />
+                    </div>
                   </div>
                 </div>
               )}
@@ -201,22 +199,22 @@ export default function AuthPage() {
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="Phone number"
                     className="w-full rounded-full bg-slate-800 px-4 py-3 text-sm text-white placeholder:text-slate-500 outline-none"
-                    className="w-full rounded-full bg-slate-800 px-4 py-3 text-sm text-white placeholder:text-slate-500 outline-none "
                   />
                 </div>
               ) : (
-                <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-slate-400 mb-1 ml-4">Email</label>
-                  <input
-                    id="email"
-                    required
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Enter Your Email"
-                    className="w-full rounded-full bg-slate-800 px-4 py-3 text-sm text-white placeholder:text-slate-500 outline-none"
-                    className="w-full rounded-full bg-slate-800 px-4 py-3 text-sm text-white placeholder:text-slate-500 outline-none "
-                  />
+                <div className="space-y-3">
+                  <div>
+                    <label htmlFor="email" className="block text-sm font-medium text-slate-400 mb-1 ml-4">Email</label>
+                    <input
+                      id="email"
+                      required
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="Enter Your Email"
+                      className="w-full rounded-full bg-slate-800 px-4 py-3 text-sm text-white placeholder:text-slate-500 outline-none"
+                    />
+                  </div>
                 </div>
               )}
 

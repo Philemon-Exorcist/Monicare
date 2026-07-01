@@ -2,7 +2,7 @@
 
 import re
 from pydantic import BaseModel, EmailStr, Field, field_validator
-from datetime import date
+from datetime import date, datetime
 
 class UserAuthCredentials(BaseModel):
     phone_no: str = Field(..., description="Nigerian phone number string")
@@ -19,29 +19,30 @@ class UserAuthCredentials(BaseModel):
     @classmethod
     def validate_nigerian_phone(cls, value: str) -> str:
         """
-        Security Guard: Strips white spaces, enforces numeric integrity,
-        and validates against standard Nigerian telecommunication formats (11 digits).
+        Security Guard: Strips whitespace and validates against standard Nigerian
+        mobile number formats.
         """
-        # 1. Clean accidental white spaces
         cleaned_phone = value.strip()
+
+        if not cleaned_phone.isdigit():
+            raise ValueError("Phone number must contain only digits.")
 
         local_regex = r"^0[789][01]\d{8}$"
         intl_regex = r"^234[789][01]\d{8}$"
 
-        if re.match(local_regex, cleaned_phone):
+        if re.fullmatch(local_regex, cleaned_phone):
             if len(cleaned_phone) != 11:
                 raise ValueError("Local Nigerian phone number must be exactly 11 digits.")
             return cleaned_phone
-            
-        elif re.match(intl_regex, cleaned_phone):
+
+        if re.fullmatch(intl_regex, cleaned_phone):
             if len(cleaned_phone) != 13:
                 raise ValueError("International Nigerian phone number must be exactly 13 digits.")
             return cleaned_phone
-            
-        else:
-            raise ValueError(
-                "Invalid Nigerian phone number format. Must be an 11-digit number starting with 0 or 13-digit starting with 234."
-            )
+
+        raise ValueError(
+            "Invalid Nigerian phone number format. Use 11 digits starting with 0 or 13 digits starting with 234."
+        )
 
 
 class UserSignUpPayload(UserAuthCredentials):
@@ -55,20 +56,23 @@ class UserSignUpPayload(UserAuthCredentials):
     email: EmailStr
     bvn: str = Field(..., min_length=11, max_length=11)
     nin: str | None = Field(default=None, min_length=11, max_length=11)
-    dob: date = Field(..., description="User date of birth in YYYY-MM-DD format")
-
+    dob: str = Field(..., description="User date of birth in MM/DD/YYYY format")
 
     @field_validator("dob")
     @classmethod
-    def validate_age_limit(cls, value: date) -> date:
-        """Security Guard: Enforces that the user must be at least 18 years old to save money."""
+    def validate_dob(cls, value: str) -> str:
+        """Accepts the frontend's MM/DD/YYYY format and validates the age."""
+        try:
+            parsed_date = datetime.strptime(value, "%m/%d/%Y").date()
+        except ValueError as exc:
+            raise ValueError("Date of birth must be in MM/DD/YYYY format.") from exc
+
         today = date.today()
-        age = today.year - value.year - ((today.month, today.day) < (value.month, value.day))
+        age = today.year - parsed_date.year - ((today.month, today.day) < (parsed_date.month, parsed_date.day))
         if age < 18:
             raise ValueError("You must be at least 18 years old to sign up.")
         return value
 
-    
     @field_validator("bvn", "nin")
     @classmethod
     def validate_numeric_ids(cls, v: str | None) -> str | None:
@@ -76,6 +80,8 @@ class UserSignUpPayload(UserAuthCredentials):
             return v
         if not v.isdigit():
             raise ValueError("Identity numbers must contain only digits.")
+        if len(v) != 11:
+            raise ValueError("Identity numbers must be exactly 11 digits long.")
         return v
     
 

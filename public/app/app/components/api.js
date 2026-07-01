@@ -14,7 +14,12 @@ async function request(path, method = "POST", body = {}) {
   const responseData = isJson ? await response.json().catch(() => null) : await response.text().catch(() => null);
 
   if (!response.ok) {
-    throw new Error(responseData?.detail || responseData?.message || responseData || "Backend request failed.");
+    const message =
+      typeof responseData === "string"
+        ? responseData
+        : responseData?.detail || responseData?.message || responseData?.error || "Backend request failed.";
+
+    throw new Error(typeof message === "string" ? message : JSON.stringify(message));
   }
 
   return responseData ?? {};
