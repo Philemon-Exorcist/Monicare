@@ -59,27 +59,29 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white flex items-stretch overflow-hidden">
-      <div className="w-full flex flex-col lg:flex-row min-h-screen">
-        <div className="hidden lg:block lg:w-1/2 min-h-screen">
-          <div className="relative h-full w-full overflow-hidden">
+    <div className="min-h-screen overflow-x-hidden bg-slate-950 text-white">
+      <div className="flex min-h-screen w-full flex-col lg:flex-row">
+        <div className="hidden lg:block lg:w-1/2">
+          <div className="relative h-full min-h-[320px] w-full overflow-hidden lg:min-h-screen">
             <Image
               src={AuthImage}
               alt="auth"
               className="object-cover"
               fill
               priority
+              sizes="(max-width: 1023px) 0px, 50vw"
             />
-            <div className="absolute bottom-10 left-10 text-white">
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent" />
+            <div className="absolute bottom-10 left-10 max-w-sm text-white">
               <h1 className="text-3xl font-bold">Monicare</h1>
               <p className="mt-2 text-lg">Community savings, simplified.</p>
             </div>
           </div>
         </div>
 
-        <div className="flex w-full items-center justify-center overflow-y-auto bg-slate-900 px-4 py-6 shadow-xl lg:w-1/2 lg:px-8 lg:py-8">
-          <div className="w-full max-w-md">
-            <div className="mb-4 flex items-center justify-between">
+        <div className="flex w-full items-center justify-center bg-slate-900 px-4 py-6 shadow-xl sm:px-6 lg:w-1/2 lg:px-8 lg:py-8">
+          <div className="w-full max-w-[440px] rounded-[1.5rem] border border-white/10 bg-slate-900/95 p-4 shadow-2xl backdrop-blur sm:p-6 lg:p-8">
+            <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <Link href="/" className="inline-flex items-center gap-2 text-sm text-white hover:text-yellow-300">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -88,7 +90,7 @@ export default function AuthPage() {
                   Back
                 </Link>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex w-full flex-wrap items-center justify-center gap-2 sm:w-auto sm:justify-end">
                 <button
                   onClick={() => setMode("signup")}
                   className={`${mode === "signup" ? "bg-yellow-400 text-slate-950" : "bg-transparent text-slate-400"} rounded-full px-4 py-1 text-sm font-semibold`}
@@ -104,11 +106,11 @@ export default function AuthPage() {
               </div>
             </div>
 
-            <h2 className="mb-4 text-center text-xl font-semibold">{mode === "signup" ? "Create An Account" : "Welcome Back"}</h2>
+            <h2 className="mb-4 text-center text-xl font-semibold sm:text-left">{mode === "signup" ? "Create An Account" : "Welcome Back"}</h2>
 
             <form onSubmit={handleSubmit} className="space-y-3">
               {mode === "signup" && (
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <div>
                     <label htmlFor="firstName" className="block text-sm font-medium text-slate-400 mb-1 ml-4">First Name</label>
                     <input
@@ -251,7 +253,7 @@ export default function AuthPage() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="mt-3 w-full rounded-full bg-yellow-400 px-6 py-2.5 text-sm font-semibold text-slate-950 transition hover:bg-yellow-300 disabled:opacity-60"
+                className="mt-3 w-full rounded-full bg-yellow-400 px-6 py-2.5 text-sm font-semibold text-slate-950 transition hover:bg-yellow-300 disabled:opacity-60 sm:py-3"
               >
                 {isLoading ? "Processing..." : mode === "signup" ? "Create an Account" : "Log In"}
               </button>
