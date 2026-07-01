@@ -6,10 +6,10 @@ export default function Header() {
       <div className="mx-auto flex max-w-[1200px] items-center justify-between px-6 py-5">
         <div className="flex items-center gap-3">
           <div className="flex h-11 w-11 items-center justify-center rounded-3xl bg-yellow-400 text-base font-bold text-slate-950">
-            N
+            M
           </div>
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.26em] text-white">Nomba Esusu</p>
+            <p className="text-sm font-semibold uppercase tracking-[0.26em] text-white">Monicare</p>
             <p className="text-xs text-slate-400">Community savings, simplified</p>
           </div>
         </div>
