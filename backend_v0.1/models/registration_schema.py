@@ -2,6 +2,7 @@
 
 import re
 from pydantic import BaseModel, EmailStr, Field, field_validator
+from datetime import date
 
 class UserAuthCredentials(BaseModel):
     phone_no: str = Field(..., description="Nigerian phone number string")
@@ -55,6 +56,18 @@ class UserSignUpPayload(UserAuthCredentials):
     email: EmailStr
     bvn: str = Field(..., min_length=11, max_length=11)
     nin: str | None = Field(default=None, min_length=11, max_length=11)
+    dob: date = Field(..., description="User date of birth in YYYY-MM-DD format")
+
+
+    @field_validator("dob")
+    @classmethod
+    def validate_age_limit(cls, value: date) -> date:
+        """Security Guard: Enforces that the user must be at least 18 years old to save money."""
+        today = date.today()
+        age = today.year - value.year - ((today.month, today.day) < (value.month, value.day))
+        if age < 18:
+            raise ValueError("You must be at least 18 years old to sign up.")
+        return value
 
     
     @field_validator("bvn", "nin")
