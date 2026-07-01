@@ -52,8 +52,8 @@ export default function Header() {
       </div>
 
       {isMenuOpen && (
-        <div className="fixed inset-0 z-40 bg-slate-950 md:hidden">
-          <div className="flex h-full flex-col">
+        <div className="fixed inset-0 z-40 bg-slate-950/95 backdrop-blur-sm md:hidden">
+          <div className="flex h-full flex-col bg-slate-950 shadow-[0_0_0_9999px_rgba(2,6,23,0.95)]">
             <div className="flex items-center justify-between border-b border-white/10 px-6 py-5">
               <div className="flex items-center gap-3">
                 <div className="flex h-11 w-11 items-center justify-center rounded-3xl bg-yellow-400 text-base font-bold text-slate-950">
@@ -71,7 +71,7 @@ export default function Header() {
               </button>
             </div>
 
-            <nav className="flex flex-1 flex-col items-center justify-center gap-8">
+            <nav className="flex flex-1 flex-col items-center justify-center gap-8 bg-slate-950/100 px-6 py-8">
               <Link href="#how-it-works" onClick={() => setIsMenuOpen(false)} className="text-lg font-medium text-slate-300 transition hover:text-yellow-300">
                 How it Works
               </Link>
