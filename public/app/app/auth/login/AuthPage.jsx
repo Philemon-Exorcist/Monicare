@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { login, signup } from "../../components/api";
+import { submitAuth } from "../../components/api";
 import AuthImage from "../../assets/u_0skhztgdyb-african-woman-9157860_1920.jpg";
 
 export default function AuthPage() {
@@ -33,18 +33,21 @@ export default function AuthPage() {
           throw new Error("Passwords do not match.");
         }
 
-        await signup({
-          first_name: fullName,
-          last_name: lastName,
-          email,
-          phone_no: phone,
-          password,
-          bvn,
-          nin,
-          dob,
-        });
+        await submitAuth(
+          {
+            first_name: fullName,
+            last_name: lastName,
+            email,
+            phone_no: phone,
+            password,
+            bvn,
+            nin,
+            dob,
+          },
+          mode
+        );
       } else {
-        await login({ phone_no: phone, password });
+        await submitAuth({ phone_no: phone, password }, mode);
       }
 
       router.push("/");
@@ -131,25 +134,9 @@ export default function AuthPage() {
                 </div>
               )}
               {mode === "signup" && (
-                <div className="grid grid-cols-2 gap-3 mt-2">
-                  <input
-                    required
-                    type="text"
-                    value={bvn}
-                    onChange={(e) => setBvn(e.target.value)}
-                    placeholder="BVN"
-                    className="rounded-full bg-slate-800 px-4 py-3 text-sm text-white placeholder:text-slate-500 outline-none"
-                  />
-                  <input
-                    required
-                    type="text"
-                    value={nin}
-                    onChange={(e) => setNin(e.target.value)}
-                    placeholder="NIN"
-                    className="rounded-full bg-slate-800 px-4 py-3 text-sm text-white placeholder:text-slate-500 outline-none"
-                  />
+                <div className="mt-2 grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <div>
-                    <label htmlFor="bvn" className="block text-sm font-medium text-slate-400 mb-1 ml-4">BVN</label>
+                    <label htmlFor="bvn" className="mb-1 ml-4 block text-sm font-medium text-slate-400">BVN</label>
                     <input
                       id="bvn"
                       required
@@ -161,7 +148,7 @@ export default function AuthPage() {
                     />
                   </div>
                   <div>
-                    <label htmlFor="nin" className="block text-sm font-medium text-slate-400 mb-1 ml-4">NIN</label>
+                    <label htmlFor="nin" className="mb-1 ml-4 block text-sm font-medium text-slate-400">NIN</label>
                     <input
                       id="nin"
                       required
@@ -176,7 +163,7 @@ export default function AuthPage() {
               )}
               {mode === "signup" && (
                 <div className="mt-3">
-                  <label htmlFor="dob" className="block text-sm font-medium text-slate-400 mb-1 ml-4">Date of Birth</label>
+                  <label htmlFor="dob" className="mb-1 ml-4 block text-sm font-medium text-slate-400">Date of Birth</label>
                   <input
                     id="dob"
                     required
@@ -184,7 +171,6 @@ export default function AuthPage() {
                     value={dob}
                     onChange={(e) => setDob(e.target.value)}
                     placeholder="Date of Birth"
-                    className="w-full rounded-full bg-slate-800 px-4 py-3 text-sm text-white placeholder:text-slate-500 outline-none"
                     className="w-full rounded-full bg-slate-800 px-4 py-3 text-sm text-white placeholder:text-slate-500 outline-none appearance-none"
                   />
                 </div>
@@ -192,7 +178,7 @@ export default function AuthPage() {
 
               {mode === "login" ? (
                 <div>
-                  <label htmlFor="phone" className="block text-sm font-medium text-slate-400 mb-1 ml-4">Phone Number</label>
+                  <label htmlFor="phone" className="mb-1 ml-4 block text-sm font-medium text-slate-400">Phone Number</label>
                   <input
                     id="phone"
                     required
@@ -201,12 +187,11 @@ export default function AuthPage() {
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="Phone number"
                     className="w-full rounded-full bg-slate-800 px-4 py-3 text-sm text-white placeholder:text-slate-500 outline-none"
-                    className="w-full rounded-full bg-slate-800 px-4 py-3 text-sm text-white placeholder:text-slate-500 outline-none "
                   />
                 </div>
               ) : (
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-slate-400 mb-1 ml-4">Email</label>
+                  <label htmlFor="email" className="mb-1 ml-4 block text-sm font-medium text-slate-400">Email</label>
                   <input
                     id="email"
                     required
@@ -215,7 +200,6 @@ export default function AuthPage() {
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="Enter Your Email"
                     className="w-full rounded-full bg-slate-800 px-4 py-3 text-sm text-white placeholder:text-slate-500 outline-none"
-                    className="w-full rounded-full bg-slate-800 px-4 py-3 text-sm text-white placeholder:text-slate-500 outline-none "
                   />
                 </div>
               )}
