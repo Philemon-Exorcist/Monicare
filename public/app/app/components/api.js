@@ -5,7 +5,7 @@ async function request(path, method = "POST", body = {}) {
     method,
     headers: {
       "Content-Type": "application/json",
-    },
+    }, 
     body: JSON.stringify(body),
   });
 

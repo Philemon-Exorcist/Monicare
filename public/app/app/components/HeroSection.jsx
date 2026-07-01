@@ -8,8 +8,8 @@ const stats = [
 
 export default function HeroSection() {
   return (
-    <section className="bg-slate-950 text-white">
-      <div className="mx-auto grid max-w-[1200px] grid-cols-1 overflow-hidden rounded-[2rem] bg-slate-950 p-6 text-white shadow-[0_35px_80px_rgba(0,0,0,0.2)] sm:p-10 lg:grid-cols-[1.05fr_0.95fr] lg:p-0">
+    <section className="w-full bg-slate-950 text-white">
+      <div className="flex w-full flex-col overflow-hidden rounded-[2rem] bg-slate-950 p-6 text-white shadow-[0_35px_80px_rgba(0,0,0,0.2)] sm:p-10 lg:flex-row lg:p-0">
         <div className="flex flex-col justify-center rounded-[2rem] bg-slate-950 p-10 lg:rounded-r-none lg:rounded-l-[2rem] lg:px-16 lg:py-20">
           <span className="inline-flex rounded-full bg-yellow-400/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-yellow-300">
             Community finance made easy
