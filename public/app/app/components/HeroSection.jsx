@@ -11,7 +11,7 @@ const stats = [
 export default function HeroSection() {
   return (
     <section className="w-full min-h-screen overflow-hidden bg-slate-950 text-white">
-      <div className="flex min-h-screen w-full flex-col overflow-hidden bg-slate-950 lg:flex-row">
+      <div className="mx-auto flex min-h-screen w-full max-w-7xl flex-col overflow-hidden px-4 py-4 sm:px-6 lg:flex-row lg:gap-6 lg:px-8 lg:py-8">
         <div className="flex w-full flex-1 items-center justify-center rounded-[2rem] bg-slate-950 px-6 py-10 lg:justify-start lg:rounded-r-none lg:rounded-l-[2rem] lg:px-12 lg:py-16">
           <div className="w-full max-w-2xl ">
             
@@ -41,7 +41,7 @@ export default function HeroSection() {
           </div>
         </div>
 
-        <div className="mt-6 flex w-full flex-1 items-center justify-center bg-yellow-400 px-6 py-10 lg:mt-0 lg:justify-end lg:rounded-l-none lg:rounded-r-none lg:px-12 lg:py-16">
+        <div className="mt-6 flex w-full flex-1 items-center justify-center rounded-[2rem] bg-yellow-400 px-6 py-10 lg:mt-0 lg:justify-end lg:rounded-l-none lg:rounded-r-[2rem] lg:px-12 lg:py-16">
             {/* <Image
               src={heroImage}
               alt="Monicare hero illustration"
