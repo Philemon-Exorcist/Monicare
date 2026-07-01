@@ -23,6 +23,7 @@ CREATE TABLE profiles (
     identity_status TEXT DEFAULT 'UNVERIFIED' NOT NULL, -- 'VERIFIED' or 'FAILED'
     verified_bvn TEXT UNIQUE,
     verified_nin TEXT UNIQUE,
+    verified_dob TEXT,
     
     -- Nomba Virtual Account parameters (Populated post-signup via background trigger)
     nomba_virtual_account TEXT UNIQUE, -- e.g., '9920113421'

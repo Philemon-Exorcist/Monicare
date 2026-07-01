@@ -150,11 +150,14 @@ export default function AuthPage() {
                       id="bvn"
                       required
                       type="text"
+                      inputMode="numeric"
+                      maxLength={11}
                       value={bvn}
                       onChange={(e) => setBvn(e.target.value)}
                       placeholder="BVN"
                       className="w-full rounded-full bg-slate-800 px-4 py-2.5 text-sm text-white placeholder:text-slate-500 outline-none"
                     />
+                    <p className="mt-1 ml-4 text-xs text-slate-500">11 digits only.</p>
                   </div>
                   <div>
                     <label htmlFor="nin" className="mb-1 ml-4 block text-sm font-medium text-slate-400">NIN</label>
@@ -162,11 +165,14 @@ export default function AuthPage() {
                       id="nin"
                       required
                       type="text"
+                      inputMode="numeric"
+                      maxLength={11}
                       value={nin}
                       onChange={(e) => setNin(e.target.value)}
                       placeholder="NIN"
                       className="w-full rounded-full bg-slate-800 px-4 py-2.5 text-sm text-white placeholder:text-slate-500 outline-none"
                     />
+                    <p className="mt-1 ml-4 text-xs text-slate-500">11 digits only.</p>
                   </div>
                 </div>
               )}
@@ -183,6 +189,7 @@ export default function AuthPage() {
                       placeholder="Date of Birth"
                       className="w-full rounded-full bg-slate-800 px-4 py-2.5 text-sm text-white placeholder:text-slate-500 outline-none appearance-none"
                     />
+                    <p className="mt-1 ml-4 text-xs text-slate-500">Use the date picker format.</p>
                   </div>
                   <div>
                     <label htmlFor="phone" className="mb-1 ml-4 block text-sm font-medium text-slate-400">Phone Number</label>

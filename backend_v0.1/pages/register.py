@@ -51,9 +51,13 @@ async def signup_and_create_account(payload: UserSignUpPayload):
             "last_name": payload.last_name,
             "email": str(payload.email),
             "phone_no": payload.phone_no,
+            "verified_bvn": payload.bvn,
+            "verified_nin": payload.nin,
+            "verified_dob": payload.dob,
             "wallet_balance": 0.00,
             "nomba_account_ref": tracking_reference,
             "nomba_virtual_account": "PENDING_PROVISIONING",
+            "identity_status": "VERIFIED",
         }
 
         admin_client.table("profiles").insert(initial_profile).execute()
@@ -83,7 +87,6 @@ async def signup_and_create_account(payload: UserSignUpPayload):
         admin_client.table("profiles").update({
             "nomba_virtual_account": bank_node.get("account_number", "FAILED_VA_PROVISIONING"),
             "nomba_bank_name": bank_node.get("bank_name", "UNKNOWN"),
-            "identity_status": "VERIFIED",
         }).eq("id", generated_uuid).execute()
 
         return {"status": "completed", "account": bank_node.get("account_number")}
