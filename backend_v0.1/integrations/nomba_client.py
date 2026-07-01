@@ -1,18 +1,15 @@
 
-
 import httpx
 from models.nomba_schema import settings
 from models.nomba_schema import NombaVirtualAccountRequest, NombaVirtualAccountResponse
 import time
 import os
-from dotenv import load_dotenv
-
 
 
 
 class NombaAPIClient:
     def __init__(self):
-        self.base_url = settings.nomba_base_url  # e.g., "https://nomba.com"
+        self.base_url = settings.NOMBA_BASE_URL  # e.g., "https://nomba.com", use the capital letter
         self.client_id = settings.nomba_client_id
         self.client_secret = settings.nomba_client_secret
         self.parent_account_id = settings.nomba_parent_account_id
