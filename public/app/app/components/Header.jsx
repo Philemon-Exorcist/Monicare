@@ -15,26 +15,27 @@ export default function Header() {
         </div>
 
         <nav className="hidden items-center gap-8 md:flex">
-          <Link href="#how-it-works" className="text-sm text-slate-300 transition hover:text-white">
+          <Link href="#how-it-works" className="text-sm text-slate-300 transition hover:text-yellow-300">
             How it Works
           </Link>
-          <Link href="#features" className="text-sm text-slate-300 transition hover:text-white">
+          <Link href="#features" className="text-sm text-slate-300 transition hover:text-yellow-300">
             Join a Circle
           </Link>
-          <Link href="#security" className="text-sm text-slate-300 transition hover:text-white">
+          <Link href="#security" className="text-sm text-slate-300 transition hover:text-yellow-300">
             Features
           </Link>
+        </nav>
+        <div className="flex items-center gap-8" >
           <Link href="/auth/login" className="text-sm font-semibold text-white transition hover:text-yellow-300">
             Login
           </Link>
-        </nav>
-
-        <Link
-          href="/auth/login"
-          className="inline-flex items-center rounded-full bg-yellow-400 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-yellow-300"
-        >
-          Get Started
-        </Link>
+          <Link
+            href="/auth/login"
+            className="inline-flex items-center rounded-full bg-yellow-400 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-yellow-300"
+          >
+            Get Started
+          </Link>
+        </div>
       </div>
     </header>
   );

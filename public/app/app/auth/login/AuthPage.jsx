@@ -59,9 +59,9 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="h-screen bg-slate-950 text-white flex items-stretch overflow-hidden">
-      <div className="w-full flex flex-col lg:flex-row h-screen">
-        <div className="hidden lg:block lg:w-1/2 h-screen">
+    <div className="min-h-screen bg-slate-950 text-white flex items-stretch overflow-hidden">
+      <div className="w-full flex flex-col lg:flex-row min-h-screen">
+        <div className="hidden lg:block lg:w-1/2 min-h-screen">
           <div className="relative h-full w-full overflow-hidden">
             <Image
               src={AuthImage}
@@ -77,9 +77,9 @@ export default function AuthPage() {
           </div>
         </div>
 
-        <div className="w-full lg:w-1/2 bg-slate-900 p-6 lg:p-10 shadow-xl h-full flex items-center justify-center overflow-hidden">
+        <div className="flex w-full items-center justify-center overflow-y-auto bg-slate-900 px-4 py-6 shadow-xl lg:w-1/2 lg:px-8 lg:py-8">
           <div className="w-full max-w-md">
-            <div className="mb-6 flex items-center justify-between">
+            <div className="mb-4 flex items-center justify-between">
               <div>
                 <Link href="/" className="inline-flex items-center gap-2 text-sm text-white hover:text-yellow-300">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -104,9 +104,9 @@ export default function AuthPage() {
               </div>
             </div>
 
-            <h2 className="mb-6 text-center text-2xl font-semibold">{mode === "signup" ? "Create An Account" : "Welcome Back"}</h2>
+            <h2 className="mb-4 text-center text-xl font-semibold">{mode === "signup" ? "Create An Account" : "Welcome Back"}</h2>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-3">
               {mode === "signup" && (
                 <div className="grid grid-cols-2 gap-3">
                   <div>
@@ -117,7 +117,7 @@ export default function AuthPage() {
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
                       placeholder="First name"
-                      className="w-full rounded-full bg-slate-800 px-4 py-3 text-sm text-white placeholder:text-slate-500 outline-none"
+                      className="w-full rounded-full bg-slate-800 px-4 py-2.5 text-sm text-white placeholder:text-slate-500 outline-none"
                     />
                   </div>
                   <div>
@@ -128,7 +128,7 @@ export default function AuthPage() {
                       value={lastName}
                       onChange={(e) => setLastName(e.target.value)}
                       placeholder="Last name"
-                      className="w-full rounded-full bg-slate-800 px-4 py-3 text-sm text-white placeholder:text-slate-500 outline-none"
+                      className="w-full rounded-full bg-slate-800 px-4 py-2.5 text-sm text-white placeholder:text-slate-500 outline-none"
                     />
                   </div>
                 </div>
@@ -144,7 +144,7 @@ export default function AuthPage() {
                       value={bvn}
                       onChange={(e) => setBvn(e.target.value)}
                       placeholder="BVN"
-                      className="w-full rounded-full bg-slate-800 px-4 py-3 text-sm text-white placeholder:text-slate-500 outline-none"
+                      className="w-full rounded-full bg-slate-800 px-4 py-2.5 text-sm text-white placeholder:text-slate-500 outline-none"
                     />
                   </div>
                   <div>
@@ -156,23 +156,37 @@ export default function AuthPage() {
                       value={nin}
                       onChange={(e) => setNin(e.target.value)}
                       placeholder="NIN"
-                      className="w-full rounded-full bg-slate-800 px-4 py-3 text-sm text-white placeholder:text-slate-500 outline-none"
+                      className="w-full rounded-full bg-slate-800 px-4 py-2.5 text-sm text-white placeholder:text-slate-500 outline-none"
                     />
                   </div>
                 </div>
               )}
               {mode === "signup" && (
-                <div className="mt-3">
-                  <label htmlFor="dob" className="mb-1 ml-4 block text-sm font-medium text-slate-400">Date of Birth</label>
-                  <input
-                    id="dob"
-                    required
-                    type="date"
-                    value={dob}
-                    onChange={(e) => setDob(e.target.value)}
-                    placeholder="Date of Birth"
-                    className="w-full rounded-full bg-slate-800 px-4 py-3 text-sm text-white placeholder:text-slate-500 outline-none appearance-none"
-                  />
+                <div className="mt-2 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <div>
+                    <label htmlFor="dob" className="mb-1 ml-4 block text-sm font-medium text-slate-400">Date of Birth</label>
+                    <input
+                      id="dob"
+                      required
+                      type="date"
+                      value={dob}
+                      onChange={(e) => setDob(e.target.value)}
+                      placeholder="Date of Birth"
+                      className="w-full rounded-full bg-slate-800 px-4 py-2.5 text-sm text-white placeholder:text-slate-500 outline-none appearance-none"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="phone" className="mb-1 ml-4 block text-sm font-medium text-slate-400">Phone Number</label>
+                    <input
+                      id="phone"
+                      required
+                      type="tel"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      placeholder="Phone number"
+                      className="w-full rounded-full bg-slate-800 px-4 py-2.5 text-sm text-white placeholder:text-slate-500 outline-none"
+                    />
+                  </div>
                 </div>
               )}
 
@@ -186,7 +200,7 @@ export default function AuthPage() {
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="Phone number"
-                    className="w-full rounded-full bg-slate-800 px-4 py-3 text-sm text-white placeholder:text-slate-500 outline-none"
+                    className="w-full rounded-full bg-slate-800 px-4 py-2.5 text-sm text-white placeholder:text-slate-500 outline-none"
                   />
                 </div>
               ) : (
@@ -199,7 +213,7 @@ export default function AuthPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="Enter Your Email"
-                    className="w-full rounded-full bg-slate-800 px-4 py-3 text-sm text-white placeholder:text-slate-500 outline-none"
+                    className="w-full rounded-full bg-slate-800 px-4 py-2.5 text-sm text-white placeholder:text-slate-500 outline-none"
                   />
                 </div>
               )}
@@ -213,7 +227,7 @@ export default function AuthPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Password"
-                  className="w-full rounded-full bg-slate-800 px-4 py-3 text-sm text-white placeholder:text-slate-500 outline-none"
+                  className="w-full rounded-full bg-slate-800 px-4 py-2.5 text-sm text-white placeholder:text-slate-500 outline-none"
                 />
               </div>
 
@@ -227,7 +241,7 @@ export default function AuthPage() {
                     value={repeatPassword}
                     onChange={(e) => setRepeatPassword(e.target.value)}
                     placeholder="Confirm Password"
-                    className="w-full rounded-full bg-slate-800 px-4 py-3 text-sm text-white placeholder:text-slate-500 outline-none"
+                    className="w-full rounded-full bg-slate-800 px-4 py-2.5 text-sm text-white placeholder:text-slate-500 outline-none"
                   />
                 </div>
               )}
@@ -237,7 +251,7 @@ export default function AuthPage() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="mt-4 w-full rounded-full bg-yellow-400 px-6 py-3 text-sm font-semibold text-slate-950 transition hover:bg-yellow-300 disabled:opacity-60"
+                className="mt-3 w-full rounded-full bg-yellow-400 px-6 py-2.5 text-sm font-semibold text-slate-950 transition hover:bg-yellow-300 disabled:opacity-60"
               >
                 {isLoading ? "Processing..." : mode === "signup" ? "Create an Account" : "Log In"}
               </button>
