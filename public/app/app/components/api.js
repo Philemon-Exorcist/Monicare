@@ -1,4 +1,4 @@
-const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "https://monicare.onrender.com";
+const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "https://monicare.onrender.com/api/v1";
 
 async function request(path, method = "POST", body = {}) {
   const response = await fetch(`${BASE_URL}${path}`, {

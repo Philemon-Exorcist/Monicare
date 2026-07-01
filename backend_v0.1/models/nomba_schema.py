@@ -37,14 +37,18 @@ class NombaVirtualAccountResponse(BaseModel):
 
 class AppSettings(BaseSettings):
     # Enforces that these strings must be present in your .env file
-    NOMBA_BASE_URL : str
-    NOMBA_LIVE_ClIENT_ID : str
-    NOMBA_LIVE_PRIVATE_KEY : str
-    Main_Account_ID : str
-    NOMBA_SUB_ACCOUNT_ID : str | None = None
-    
-    # Automatically reads from the root .env file
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
+    NOMBA_BASE_URL: str
+    NOMBA_LIVE_CLIENT_ID: str = Field(alias="NOMBA_LIVE_ClIENT_ID")
+    NOMBA_LIVE_PRIVATE_KEY: str = Field(alias="NOMBA_LIVE_PRIVATE_KEY")
+    Main_Account_ID: str
+    NOMBA_SUB_ACCOUNT_ID: str | None = None
+
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
+        populate_by_name=True,
+    )
 
 # Initialize a single, reusable instance of your settings
 settings = AppSettings()
