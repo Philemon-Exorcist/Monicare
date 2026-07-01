@@ -1,16 +1,48 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function AuthPage() {
   const [mode, setMode] = useState("signup");
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [repeatPassword, setRepeatPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const router = useRouter();
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setIsLoading(true);
+    setError("");
+
+    if (mode === "signup" && password !== repeatPassword) {
+      setError("Passwords do not match.");
+      setIsLoading(false);
+      return;
+    }
+
+    // Simulate API call
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    console.log("Submitting:", { mode, fullName, email, password });
+
+    // On successful login/signup, redirect to dashboard
+    router.push("/");
+
+    setIsLoading(false);
+  };
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
       <div className="mx-auto flex min-h-screen w-full max-w-[1600px] flex-col justify-center gap-8 px-6 py-10 lg:flex-row lg:items-center lg:justify-between lg:px-12">
         <section className="mx-auto w-full max-w-xl rounded-[2rem] border border-slate-200/80 bg-white p-8 shadow-[0_22px_80px_rgba(15,23,42,0.08)] sm:p-10">
           <div className="mb-8">
-            <p className="text-sm font-semibold uppercase tracking-[0.3em] text-sky-600">Sign into your account</p>
+            <p className="text-sm font-semibold uppercase tracking-[0.3em] text-sky-600">
+              {mode === "login" ? "Sign into your account" : "Create an account"}
+            </p>
             <h1 className="mt-4 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
               Sign up and get 1 month free trial
             </h1>
@@ -41,12 +73,14 @@ export default function AuthPage() {
             </button>
           </div>
 
-          <form className="space-y-5" onSubmit={(event) => event.preventDefault()}>
+          <form className="space-y-5" onSubmit={handleSubmit}>
             {mode === "signup" && (
               <label className="block">
                 <span className="text-sm font-medium text-slate-700">Full name</span>
                 <input
                   type="text"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
                   placeholder="Enter your name"
                   className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-100"
                 />
@@ -57,6 +91,8 @@ export default function AuthPage() {
               <span className="text-sm font-medium text-slate-700">Email</span>
               <input
                 type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter your email"
                 className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-100"
               />
@@ -67,6 +103,8 @@ export default function AuthPage() {
               <div className="relative mt-2">
                 <input
                   type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter your password"
                   className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 pr-12 text-sm text-slate-900 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-100"
                 />
@@ -82,6 +120,8 @@ export default function AuthPage() {
                 <div className="relative mt-2">
                   <input
                     type="password"
+                    value={repeatPassword}
+                    onChange={(e) => setRepeatPassword(e.target.value)}
                     placeholder="Enter your password"
                     className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 pr-12 text-sm text-slate-900 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-100"
                   />
@@ -92,11 +132,15 @@ export default function AuthPage() {
               </label>
             )}
 
+            {error && <p className="text-sm text-red-600">{error}</p>}
+
             <button
               type="submit"
-              className="inline-flex w-full items-center justify-center rounded-2xl bg-sky-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/10 transition hover:bg-sky-700"
+              className="inline-flex w-full items-center justify-center rounded-2xl bg-sky-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/10 transition hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-50"
+              disabled={isLoading}
             >
-              {mode === "signup" ? "Sign up" : "Log in"}
+              {isLoading && <svg className="-ml-1 mr-3 h-5 w-5 animate-spin text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>}
+              {isLoading ? "Processing..." : (mode === "signup" ? "Sign up" : "Log in")}
             </button>
           </form>
 
