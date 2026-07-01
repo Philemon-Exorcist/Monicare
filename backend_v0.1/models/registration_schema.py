@@ -45,10 +45,9 @@ class UserAuthCredentials(BaseModel):
 
 
 class UserSignUpPayload(UserAuthCredentials):
-    # The secure, authentic user UUID generated directly by Supabase Auth
-    user_id: str = Field(
-        ..., 
-        description="The unique authenticated UUID string from Supabase Auth"
+    user_id: str | None = Field(
+        default=None,
+        description="Optional authenticated UUID string from Supabase Auth"
     )
     first_name: str = Field(..., min_length=2, max_length=50)
     middle_name: str | None = Field(default=None, max_length=50)

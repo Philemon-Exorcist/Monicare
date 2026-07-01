@@ -1,26 +1,29 @@
-const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "https://monicare.onrender.com/api/v1";
+const BASE_URL = (process.env.NEXT_PUBLIC_API_BASE_URL || "https://monicare.onrender.com").replace(/\/$/, "");
 
 async function request(path, method = "POST", body = {}) {
   const response = await fetch(`${BASE_URL}${path}`, {
     method,
     headers: {
       "Content-Type": "application/json",
-    }, 
-    body: JSON.stringify(body),
+    },
+    body: method === "GET" ? undefined : JSON.stringify(body),
   });
 
+  const contentType = response.headers.get("content-type") || "";
+  const isJson = contentType.includes("application/json");
+  const responseData = isJson ? await response.json().catch(() => null) : await response.text().catch(() => null);
+
   if (!response.ok) {
-    const errorData = await response.json().catch(() => null);
-    throw new Error(errorData?.detail || errorData?.message || "Backend request failed.");
+    throw new Error(responseData?.detail || responseData?.message || responseData || "Backend request failed.");
   }
 
-  return response.json();
+  return responseData ?? {};
 }
 
 export function login(payload) {
-  return request("/api/auth/login", "POST", payload);
+  return request("/api/v1/login", "POST", payload);
 }
 
 export function signup(payload) {
-  return request("/api/auth/signup", "POST", payload);
+  return request("/api/v1/signup", "POST", payload);
 }
