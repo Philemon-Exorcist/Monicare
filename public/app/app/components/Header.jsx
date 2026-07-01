@@ -52,7 +52,7 @@ export default function Header() {
       </div>
 
       {isMenuOpen && (
-        <div className="fixed inset-0 z-40 bg-slate-950/90 backdrop-blur-lg md:hidden">
+        <div className="fixed inset-0 z-40 bg-slate-950 md:hidden">
           <div className="flex h-full flex-col">
             <div className="flex items-center justify-between border-b border-white/10 px-6 py-5">
               <div className="flex items-center gap-3">
@@ -72,18 +72,18 @@ export default function Header() {
             </div>
 
             <nav className="flex flex-1 flex-col items-center justify-center gap-8">
-              <Link href="#how-it-works" onClick={() => setIsMenuOpen(false)} className="text-lg text-slate-300 transition hover:text-yellow-300">
+              <Link href="#how-it-works" onClick={() => setIsMenuOpen(false)} className="text-lg font-medium text-slate-300 transition hover:text-yellow-300">
                 How it Works
               </Link>
-              <Link href="#features" onClick={() => setIsMenuOpen(false)} className="text-lg text-slate-300 transition hover:text-yellow-300">
+              <Link href="#features" onClick={() => setIsMenuOpen(false)} className="text-lg font-medium text-slate-300 transition hover:text-yellow-300">
                 Join a Circle
               </Link>
-              <Link href="#security" onClick={() => setIsMenuOpen(false)} className="text-lg text-slate-300 transition hover:text-yellow-300">
+              <Link href="#security" onClick={() => setIsMenuOpen(false)} className="text-lg font-medium text-slate-300 transition hover:text-yellow-300">
                 Features
               </Link>
             </nav>
 
-            <div className="flex flex-col gap-4 p-6">
+            <div className="flex flex-col gap-4 border-t border-white/10 p-6">
               <Link
                 href="/auth/login"
                 onClick={() => setIsMenuOpen(false)}
