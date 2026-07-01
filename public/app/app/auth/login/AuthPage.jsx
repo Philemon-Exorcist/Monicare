@@ -34,17 +34,17 @@ export default function AuthPage() {
         }
 
         await signup({
-          fullName,
-          lastName,
+          first_name: fullName,
+          last_name: lastName,
           email,
-          phone,
+          phone_no: phone,
           password,
           bvn,
           nin,
           dob,
         });
       } else {
-        await login({ phone, password });
+        await login({ phone_no: phone, password });
       }
 
       router.push("/");
