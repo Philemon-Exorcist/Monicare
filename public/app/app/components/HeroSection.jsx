@@ -1,7 +1,4 @@
-import Image from "next/image";
 import Link from "next/link";
-import ImageP1 from "../assets/p1.jpg";
-import ImageP2 from "../assets/p2.jpg";
 
 const stats = [
   { label: "Instant Formation", value: "Build your group in seconds" },
@@ -12,12 +9,12 @@ const stats = [
 export default function HeroSection() {
   return (
     <section className="bg-slate-950 text-white">
-      <div className="mx-auto flex max-w-[1200px] flex-col gap-10 px-6 py-16 lg:flex-row lg:items-center lg:px-8">
-        <div className="lg:w-1/2">
+      <div className="mx-auto grid max-w-[1200px] grid-cols-1 overflow-hidden rounded-[2rem] bg-slate-950 p-6 text-white shadow-[0_35px_80px_rgba(0,0,0,0.2)] sm:p-10 lg:grid-cols-[1.05fr_0.95fr] lg:p-0">
+        <div className="flex flex-col justify-center rounded-[2rem] bg-slate-950 p-10 lg:rounded-r-none lg:rounded-l-[2rem] lg:px-16 lg:py-20">
           <span className="inline-flex rounded-full bg-yellow-400/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-yellow-300">
             Community finance made easy
           </span>
-          <h1 className="mt-3 text-5xl font-semibold leading-tight tracking-tight text-white sm:text-6xl">
+          <h1 className="mt-8 text-5xl font-semibold leading-tight tracking-tight text-white sm:text-6xl">
             Turn your community into a wealth-building engine.
           </h1>
           <p className="mt-6 max-w-xl text-lg leading-8 text-slate-300">
@@ -49,46 +46,12 @@ export default function HeroSection() {
           </div>
         </div>
 
-        <div className="lg:w-1/2">
-          <div className="grid gap-5 sm:grid-cols-[1.2fr_0.8fr]">
-            <div className="grid gap-5">
-              <div className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-slate-900/80 shadow-[0_30px_70px_rgba(0,0,0,0.3)]">
-                <div className="relative aspect-[4/5] w-full overflow-hidden rounded-[2rem]">
-                  <Image src={ImageP1} alt="Hero image p1" className="object-cover" fill priority />
-                </div>
-              </div>
-              <div className="grid gap-5 sm:grid-cols-2">
-                <div className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-slate-900/80 shadow-[0_30px_70px_rgba(0,0,0,0.3)]">
-                  <div className="relative aspect-[10/9] w-full overflow-hidden rounded-[2rem]">
-                    <Image src={ImageP2} alt="Hero image p2" className="object-cover" fill priority />
-                  </div>
-                </div>
-                <div className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-slate-900/80 shadow-[0_30px_70px_rgba(0,0,0,0.3)]">
-                  <div className="relative aspect-[10/9] w-full overflow-hidden rounded-[2rem]">
-                    <Image src={ImageP1} alt="Hero image p1" className="object-cover" fill priority />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="grid gap-5">
-              <div className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-slate-900/80 shadow-[0_30px_70px_rgba(0,0,0,0.3)]">
-                <div className="relative aspect-[5/6] w-full overflow-hidden rounded-[2rem]">
-                  <Image src={ImageP2} alt="Hero image p2" className="object-cover" fill priority />
-                </div>
-              </div>
-              <div className="grid gap-5 sm:grid-cols-2">
-                <div className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-slate-900/80 shadow-[0_30px_70px_rgba(0,0,0,0.3)]">
-                  <div className="relative aspect-[8/9] w-full overflow-hidden rounded-[2rem]">
-                    <Image src={ImageP1} alt="Hero image p1" className="object-cover" fill priority />
-                  </div>
-                </div>
-                <div className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-slate-900/80 shadow-[0_30px_70px_rgba(0,0,0,0.3)]">
-                  <div className="relative aspect-[8/9] w-full overflow-hidden rounded-[2rem]">
-                    <Image src={ImageP2} alt="Hero image p2" className="object-cover" fill priority />
-                  </div>
-                </div>
-              </div>
+        <div className="flex items-center justify-center rounded-[2rem] bg-yellow-400 p-10 lg:rounded-l-none lg:rounded-r-[2rem] lg:p-16">
+          <div className="flex h-full w-full min-h-[320px] items-center justify-center rounded-[2rem] border border-yellow-500/80 bg-yellow-500/90 p-8 shadow-[0_30px_70px_rgba(0,0,0,0.18)]">
+            <div className="text-center text-slate-950">
+              <p className="text-sm uppercase tracking-[0.3em]">Image placeholder</p>
+              <p className="mt-3 text-2xl font-semibold">Your hero image will appear here</p>
+              <p className="mt-4 max-w-xs text-sm text-slate-950/80">Replace this with your final artwork once the image is ready.</p>
             </div>
           </div>
         </div>
