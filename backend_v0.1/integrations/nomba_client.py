@@ -9,10 +9,10 @@ import os
 
 class NombaAPIClient:
     def __init__(self):
-        self.base_url = settings.NOMBA_BASE_URL  # e.g., "https://nomba.com", use the capital letter
-        self.client_id = settings.nomba_client_id
-        self.client_secret = settings.nomba_client_secret
-        self.parent_account_id = settings.nomba_parent_account_id
+        self.base_url = settings.NOMBA_BASE_URL
+        self.client_id = settings.NOMBA_LIVE_CLIENT_ID
+        self.client_secret = settings.NOMBA_LIVE_PRIVATE_KEY
+        self.parent_account_id = settings.Main_Account_ID
 
         # Token Cache variables to protect network performance
         self._cached_token = None
