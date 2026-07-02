@@ -168,14 +168,36 @@ async def signup_and_create_account(payload: UserSignUpPayload):
 @router.post("/login", status_code=status.HTTP_200_OK)
 async def user_login(payload: UserLoginCredentials):
     """
-    AUTHENTICATION CORE: Verifies email/password inputs against Supabase.
-    Returns a secure JWT token required to unlock RLS protected table records.
+    Uses the submitted phone number to find the matching profile email,
+    then authenticates that Supabase Auth account with the password.
     """
     supabase_admin = get_supabase_admin()
 
     try:
+        profile_response = (
+            supabase_admin.table("profiles")
+            .select("email")
+            .eq("phone_no", payload.phone_no)
+            .limit(1)
+            .execute()
+        )
+
+        profile_rows = profile_response.data or []
+        if not profile_rows:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="No account was found for this phone number.",
+            )
+
+        user_email = profile_rows[0].get("email")
+        if not user_email:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="This account is missing an email address. Please contact support.",
+            )
+
         session_auth = supabase_admin.auth.sign_in_with_password({
-            "phone": payload.phone_no,
+            "email": user_email,
             "password": payload.password
         })
 
@@ -196,13 +218,12 @@ async def user_login(payload: UserLoginCredentials):
             }
         }
 
+    except HTTPException:
+        raise
     except Exception as auth_fail_error:
         logger.warning(f"Failed authentication login attempt for phone: {payload.phone_no}. Trace: {auth_fail_error}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid Phone or Password credentials. Please check your inputs and try again."
         )
-    else:
-        logger.info(f"User {payload.phone_no} successfully logged in.")
-        raise HTTPException(status_code=status.HTTP_200_OK, detail="Login successful.")
 
