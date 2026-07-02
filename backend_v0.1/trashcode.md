@@ -455,3 +455,89 @@ async def create_virtual_account(user_uuid: str, first_name: str, last_name: str
         }
 
 
+"""
+# ─── PYDANTIC SCHEMAS ───
+class NombaVirtualAccountRequest(BaseModel):
+    # Matches the current Nomba virtual account docs:
+    # required: accountRef, accountName
+    # optional: bvn, expiryDate, expectedAmount
+    account_ref: str = Field(alias="accountRef", min_length=16, max_length=64)
+    account_name: str = Field(alias="accountName", min_length=8, max_length=64)
+    bvn: Optional[str] = Field(default=None, min_length=8, max_length=11)
+    expiry_date: Optional[str] = Field(default=None, alias="expiryDate")
+    expected_amount: Optional[float] = Field(default=None, alias="expectedAmount")
+
+    model_config = {
+        "populate_by_name": True
+    }
+
+
+class NombaAccountData(BaseModel):
+    account_holder_id: Optional[str] = Field(default=None, alias="accountHolderId")
+    account_name: str = Field(alias="accountName")
+    account_number: Optional[str] = Field(default=None, alias="bankAccountNumber")  # Maps NUBAN number
+    bank_name: str = Field(alias="bankName")
+    account_reference: str = Field(alias="accountRef")
+    currency: Optional[str] = Field(default="NGN")
+    expired: Optional[bool] = Field(default=False)
+
+# ─── THE NEW ROBUST ENVELOPE SCHEMA ───
+class NombaVirtualAccountResponse(BaseModel):
+    code: str  # "00" means absolute success, other codes mean validation failures
+    description: str  # Clear error message string from Nomba engineers
+    status: Optional[bool] = None
+    data: Optional[NombaAccountData] = None  # Populated only if code == "00"
+    
+    model_config = {
+        "populate_by_name": True
+    }
+
+"""
+
+
+
+"""
+# 5. BANK PROVISIONING
+    try:
+        nomba_result = await create_virtual_account(
+            user_uuid=generated_uuid,
+            first_name=payload.first_name,
+            last_name=payload.last_name,
+            email=payload.email,
+            middle_name=payload.middle_name
+        )
+
+        if not nomba_result.get("success"):
+            raise Exception(f"Provisioning Failed: {nomba_result.get('error_reason', 'Unknown API Error')}")
+
+        account_number = nomba_result["account_number"]
+        bank_name = nomba_result["bank_name"]
+
+        supabase_admin.table("profiles").update({
+            "nomba_virtual_account": account_number,
+            "nomba_bank_name": bank_name
+        }).eq("id", generated_uuid).execute()
+
+        return {
+            "status": "success",
+            "message": "User wallet infrastructure initialized completely.",
+            "user_id": generated_uuid,
+            "virtual_account": account_number,
+            "bank": bank_name
+        }
+
+    except Exception as gateway_err:
+        logger.error(f"Nomba banking engine tracking failed for user {generated_uuid}: {gateway_err}")
+        
+        supabase_admin.table("profiles").update({
+            "nomba_virtual_account": "FAILED_VA_PROVISIONING",
+            "nomba_bank_name": "UNKNOWN"
+        }).eq("id", generated_uuid).execute()
+
+        return {
+            "status": "partial_success",
+            "message": f"Profile created. Wallet allocation pending background processing.",
+            "user_id": generated_uuid
+        }
+
+"""

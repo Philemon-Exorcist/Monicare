@@ -154,53 +154,6 @@ async def signup_and_create_account(payload: UserSignUpPayload):
         }
 
 
-"""
-        # 5. BANK PROVISIONING
-    try:
-        nomba_result = await create_virtual_account(
-            user_uuid=generated_uuid,
-            first_name=payload.first_name,
-            last_name=payload.last_name,
-            email=payload.email,
-            middle_name=payload.middle_name
-        )
-
-        if not nomba_result.get("success"):
-            raise Exception(f"Provisioning Failed: {nomba_result.get('error_reason', 'Unknown API Error')}")
-
-        account_number = nomba_result["account_number"]
-        bank_name = nomba_result["bank_name"]
-
-        supabase_admin.table("profiles").update({
-            "nomba_virtual_account": account_number,
-            "nomba_bank_name": bank_name
-        }).eq("id", generated_uuid).execute()
-
-        return {
-            "status": "success",
-            "message": "User wallet infrastructure initialized completely.",
-            "user_id": generated_uuid,
-            "virtual_account": account_number,
-            "bank": bank_name
-        }
-
-    except Exception as gateway_err:
-        logger.error(f"Nomba banking engine tracking failed for user {generated_uuid}: {gateway_err}")
-        
-        supabase_admin.table("profiles").update({
-            "nomba_virtual_account": "FAILED_VA_PROVISIONING",
-            "nomba_bank_name": "UNKNOWN"
-        }).eq("id", generated_uuid).execute()
-
-        return {
-            "status": "partial_success",
-            "message": f"Profile created. Wallet allocation pending background processing.",
-            "user_id": generated_uuid
-        }
-
-"""
-
-
 
   
 
