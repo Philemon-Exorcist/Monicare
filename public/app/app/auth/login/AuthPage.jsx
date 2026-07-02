@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -21,6 +21,27 @@ export default function AuthPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
+
+  useEffect(() => {
+    // Check URL hash on component mount
+    if (typeof window !== "undefined") {
+      const hash = window.location.hash.slice(1); // Remove the # character
+      if (hash === "login" || hash === "signup") {
+        setMode(hash);
+      }
+
+      // Listen for hash changes
+      const handleHashChange = () => {
+        const newHash = window.location.hash.slice(1);
+        if (newHash === "login" || newHash === "signup") {
+          setMode(newHash);
+        }
+      };
+
+      window.addEventListener("hashchange", handleHashChange);
+      return () => window.removeEventListener("hashchange", handleHashChange);
+    }
+  }, []);
 
   const maxDobDate = () => {
     const cutoff = new Date();
@@ -103,8 +124,8 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen overflow-x-hidden bg-slate-950 text-white">
-      <div className="flex min-h-screen w-full flex-col lg:flex-row">
+    <div className="h-screen w-screen overflow-x-hidden bg-slate-950 text-white lg:min-h-screen">
+      <div className="flex h-screen w-full flex-col lg:h-auto lg:min-h-screen lg:flex-row">
         <div className="hidden lg:block lg:w-1/2">
           <div className="relative h-full min-h-[320px] w-full overflow-hidden lg:min-h-screen">
             <Image
@@ -123,8 +144,8 @@ export default function AuthPage() {
           </div>
         </div>
 
-        <div className="flex w-full items-center justify-center bg-slate-900 px-3 py-4 shadow-xl sm:px-6 md:py-6 lg:w-1/2 lg:px-8 lg:py-8">
-          <div className="w-full max-w-[440px] rounded-2xl border border-white/10 bg-slate-900/95 p-3 shadow-2xl backdrop-blur sm:rounded-[1.5rem] sm:p-6 lg:p-8">
+        <div className="flex w-full flex-col items-center justify-center overflow-y-auto bg-slate-900 px-3 py-4 shadow-xl sm:px-6 sm:py-6 lg:w-1/2 lg:px-8 lg:py-8">
+          <div className="w-full max-w-[90vw] sm:max-w-[85vw] md:max-w-[80vw] lg:max-w-[440px] rounded-2xl border border-white/10 bg-slate-900/95 p-3 shadow-2xl backdrop-blur sm:rounded-[1.5rem] sm:p-6 lg:p-8 max-h-[90vh] overflow-y-auto">
             <div className="mb-3 flex flex-col gap-2 sm:mb-4 sm:gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <Link href="/" className="inline-flex items-center gap-2 text-xs sm:text-sm text-white hover:text-yellow-300 transition">
