@@ -98,13 +98,36 @@ async def signup_and_create_account(payload: UserSignUpPayload):
 @router.post("/login", status_code=status.HTTP_200_OK)
 async def user_login(payload: UserLoginCredentials):
     """
-    Authenticates the user's email/password directly against Supabase Auth.
+    Uses the submitted phone number to find the matching profile email,
+    then authenticates that Supabase Auth account with the password.
     """
     admin_client = get_admin_client()
 
     try:
+        profile_response = (
+            admin_client.table("profiles")
+            .select("email")
+            .eq("phone_no", payload.phone_no)
+            .limit(1)
+            .execute()
+        )
+
+        profile_rows = profile_response.data or []
+        if not profile_rows:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="No account was found for this phone number.",
+            )
+
+        user_email = profile_rows[0].get("email")
+        if not user_email:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="This account is missing an email address. Please contact support.",
+            )
+
         session_auth = admin_client.auth.sign_in_with_password({
-            "email": payload.email,
+            "email": user_email,
             "password": payload.password,
         })
 
@@ -125,9 +148,11 @@ async def user_login(payload: UserLoginCredentials):
             },
         }
 
+    except HTTPException:
+        raise
     except Exception as auth_fail_error:
-        logger.warning(f"Failed authentication login attempt for {payload.email}: {auth_fail_error}")
+        logger.warning(f"Failed authentication login attempt for {payload.phone_no}: {auth_fail_error}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid email or password supplied.",
+            detail="Invalid phone number or password supplied.",
         )

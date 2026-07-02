@@ -47,7 +47,7 @@ class UserAuthCredentials(BaseModel):
 
 
 class UserLoginCredentials(BaseModel):
-    email: EmailStr
+    phone_no: str = Field(..., description="Nigerian phone number string")
     password: str
 
     @field_validator("password")
@@ -56,6 +56,33 @@ class UserLoginCredentials(BaseModel):
         if len(value) < 8:
             raise ValueError("Password must be at least 8 characters long.")
         return value
+
+    @field_validator("phone_no")
+    @classmethod
+    def validate_nigerian_phone(cls, value: str) -> str:
+        cleaned_phone = str(value).strip()
+        normalized_phone = re.sub(r"[\s\-\.\(\)]", "", cleaned_phone)
+
+        if normalized_phone.startswith("+"):
+            normalized_phone = normalized_phone[1:]
+
+        if not normalized_phone.isdigit():
+            raise ValueError(
+                "Phone number must contain only digits after removing spaces, dashes, and parentheses."
+            )
+
+        local_regex = r"^0[789][01]\d{8}$"
+        intl_regex = r"^234[789][01]\d{8}$"
+
+        if re.fullmatch(local_regex, normalized_phone):
+            return normalized_phone
+
+        if re.fullmatch(intl_regex, normalized_phone):
+            return normalized_phone
+
+        raise ValueError(
+            "Invalid Nigerian phone number format. Use 080..., 070..., 090... or +234/234 variants."
+        )
 
 
 class UserSignUpPayload(UserAuthCredentials):
@@ -127,6 +154,5 @@ class UserSignUpPayload(UserAuthCredentials):
             
         return cleaned_value
     
-
 
 

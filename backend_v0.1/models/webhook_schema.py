@@ -14,10 +14,6 @@ class NombaWebhookPayload(BaseModel):
 
 
 
-
-
-from pydantic import BaseModel, Field
-
 class NombaPaymentData(BaseModel):
     amount: float
     order_reference: str = Field(alias="orderReference")

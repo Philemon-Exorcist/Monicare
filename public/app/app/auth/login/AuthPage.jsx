@@ -101,11 +101,11 @@ export default function AuthPage() {
           mode
         );
       } else {
-        if (!email.trim()) {
-          throw new Error("Please enter your email address.");
+        if (!phone.trim()) {
+          throw new Error("Please enter your phone number.");
         }
 
-        await submitAuth({ email: email.trim(), password }, mode);
+        await submitAuth({ phone_no: phone.trim(), password }, mode);
       }
 
       router.push("/");
@@ -267,18 +267,18 @@ export default function AuthPage() {
 
               {mode === "login" ? (
                 <div>
-                  <label htmlFor="email-login" className="mb-1 ml-2 sm:ml-4 block text-xs sm:text-sm font-medium text-slate-400">Email</label>
+                  <label htmlFor="phone-login" className="mb-1 ml-2 sm:ml-4 block text-xs sm:text-sm font-medium text-slate-400">Phone Number</label>
                   <input
-                    id="email-login"
+                    id="phone-login"
                     required
-                    type="email"
-                    autoComplete="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Email address"
+                    type="tel"
+                    autoComplete="tel"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="Phone number"
                     className="w-full rounded-full bg-slate-800 px-3 sm:px-4 py-2 sm:py-2.5 text-sm text-white placeholder:text-slate-500 outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-opacity-50 transition"
                   />
-                  <p className="mt-0.5 ml-2 sm:ml-4 text-xs text-slate-500">Use the email you registered with.</p>
+                  <p className="mt-0.5 ml-2 sm:ml-4 text-xs text-slate-500">Use the phone number you registered with.</p>
                 </div>
               ) : (
                 <div>
