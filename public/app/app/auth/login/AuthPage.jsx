@@ -123,66 +123,66 @@ export default function AuthPage() {
           </div>
         </div>
 
-        <div className="flex w-full items-center justify-center bg-slate-900 px-4 py-6 shadow-xl sm:px-6 lg:w-1/2 lg:px-8 lg:py-8">
-          <div className="w-full max-w-[440px] rounded-[1.5rem] border border-white/10 bg-slate-900/95 p-4 shadow-2xl backdrop-blur sm:p-6 lg:p-8">
-            <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex w-full items-center justify-center bg-slate-900 px-3 py-4 shadow-xl sm:px-6 md:py-6 lg:w-1/2 lg:px-8 lg:py-8">
+          <div className="w-full max-w-[440px] rounded-2xl border border-white/10 bg-slate-900/95 p-3 shadow-2xl backdrop-blur sm:rounded-[1.5rem] sm:p-6 lg:p-8">
+            <div className="mb-3 flex flex-col gap-2 sm:mb-4 sm:gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <Link href="/" className="inline-flex items-center gap-2 text-sm text-white hover:text-yellow-300">
+                <Link href="/" className="inline-flex items-center gap-2 text-xs sm:text-sm text-white hover:text-yellow-300 transition">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
                   </svg>
                   Back
                 </Link>
               </div>
-              <div className="flex w-full flex-wrap items-center justify-center gap-2 sm:w-auto sm:justify-end">
+              <div className="flex w-full flex-wrap items-center justify-center gap-1.5 sm:w-auto sm:gap-2 sm:justify-end">
                 <button
                   onClick={() => setMode("signup")}
-                  className={`${mode === "signup" ? "bg-yellow-400 text-slate-950" : "bg-transparent text-slate-400"} rounded-full px-4 py-1 text-sm font-semibold`}
+                  className={`${mode === "signup" ? "bg-yellow-400 text-slate-950" : "bg-transparent text-slate-400"} rounded-full px-3 py-1 text-xs sm:px-4 sm:py-1 sm:text-sm font-semibold transition hover:text-slate-200`}
                 >
                   Sign Up
                 </button>
                 <button
                   onClick={() => setMode("login")}
-                  className={`${mode === "login" ? "bg-yellow-400 text-slate-950" : "bg-transparent text-slate-400"} rounded-full px-4 py-1 text-sm font-semibold`}
+                  className={`${mode === "login" ? "bg-yellow-400 text-slate-950" : "bg-transparent text-slate-400"} rounded-full px-3 py-1 text-xs sm:px-4 sm:py-1 sm:text-sm font-semibold transition hover:text-slate-200`}
                 >
                   Log In
                 </button>
               </div>
             </div>
 
-            <h2 className="mb-4 text-center text-xl font-semibold sm:text-left">{mode === "signup" ? "Create An Account" : "Welcome Back"}</h2>
+            <h2 className="mb-3 text-center text-lg sm:mb-4 sm:text-xl font-semibold sm:text-left">{mode === "signup" ? "Create An Account" : "Welcome Back"}</h2>
 
-            <form onSubmit={handleSubmit} className="space-y-3">
+            <form onSubmit={handleSubmit} className="space-y-2 sm:space-y-3">
               {mode === "signup" && (
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3">
                   <div>
-                    <label htmlFor="firstName" className="block text-sm font-medium text-slate-400 mb-1 ml-4">First Name</label>
+                    <label htmlFor="firstName" className="block text-xs sm:text-sm font-medium text-slate-400 mb-1 ml-2 sm:ml-4">First Name</label>
                     <input
                       id="firstName"
                       required
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
                       placeholder="First name"
-                      className="w-full rounded-full bg-slate-800 px-4 py-2.5 text-sm text-white placeholder:text-slate-500 outline-none"
+                      className="w-full rounded-full bg-slate-800 px-3 sm:px-4 py-2 sm:py-2.5 text-sm text-white placeholder:text-slate-500 outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-opacity-50 transition"
                     />
                   </div>
                   <div>
-                    <label htmlFor="lastName" className="block text-sm font-medium text-slate-400 mb-1 ml-4">Last Name</label>
+                    <label htmlFor="lastName" className="block text-xs sm:text-sm font-medium text-slate-400 mb-1 ml-2 sm:ml-4">Last Name</label>
                     <input
                       id="lastName"
                       required
                       value={lastName}
                       onChange={(e) => setLastName(e.target.value)}
                       placeholder="Last name"
-                      className="w-full rounded-full bg-slate-800 px-4 py-2.5 text-sm text-white placeholder:text-slate-500 outline-none"
+                      className="w-full rounded-full bg-slate-800 px-3 sm:px-4 py-2 sm:py-2.5 text-sm text-white placeholder:text-slate-500 outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-opacity-50 transition"
                     />
                   </div>
                 </div>
               )}
               {mode === "signup" && (
-                <div className="mt-2 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3">
                   <div>
-                    <label htmlFor="bvn" className="mb-1 ml-4 block text-sm font-medium text-slate-400">BVN</label>
+                    <label htmlFor="bvn" className="mb-1 ml-2 sm:ml-4 block text-xs sm:text-sm font-medium text-slate-400">BVN</label>
                     <input
                       id="bvn"
                       required
@@ -192,12 +192,12 @@ export default function AuthPage() {
                       value={bvn}
                       onChange={(e) => setBvn(e.target.value)}
                       placeholder="BVN"
-                      className="w-full rounded-full bg-slate-800 px-4 py-2.5 text-sm text-white placeholder:text-slate-500 outline-none"
+                      className="w-full rounded-full bg-slate-800 px-3 sm:px-4 py-2 sm:py-2.5 text-sm text-white placeholder:text-slate-500 outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-opacity-50 transition"
                     />
-                    <p className="mt-1 ml-4 text-xs text-slate-500">11 digits only.</p>
+                    <p className="mt-0.5 ml-2 sm:ml-4 text-xs text-slate-500">11 digits only.</p>
                   </div>
                   <div>
-                    <label htmlFor="nin" className="mb-1 ml-4 block text-sm font-medium text-slate-400">NIN</label>
+                    <label htmlFor="nin" className="mb-1 ml-2 sm:ml-4 block text-xs sm:text-sm font-medium text-slate-400">NIN</label>
                     <input
                       id="nin"
                       required
@@ -207,16 +207,16 @@ export default function AuthPage() {
                       value={nin}
                       onChange={(e) => setNin(e.target.value)}
                       placeholder="NIN"
-                      className="w-full rounded-full bg-slate-800 px-4 py-2.5 text-sm text-white placeholder:text-slate-500 outline-none"
+                      className="w-full rounded-full bg-slate-800 px-3 sm:px-4 py-2 sm:py-2.5 text-sm text-white placeholder:text-slate-500 outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-opacity-50 transition"
                     />
-                    <p className="mt-1 ml-4 text-xs text-slate-500">11 digits only.</p>
+                    <p className="mt-0.5 ml-2 sm:ml-4 text-xs text-slate-500">11 digits only.</p>
                   </div>
                 </div>
               )}
               {mode === "signup" && (
-                <div className="mt-2 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3">
                   <div>
-                    <label htmlFor="dob" className="mb-1 ml-4 block text-sm font-medium text-slate-400">Date of Birth</label>
+                    <label htmlFor="dob" className="mb-1 ml-2 sm:ml-4 block text-xs sm:text-sm font-medium text-slate-400">Date of Birth</label>
                     <input
                       id="dob"
                       required
@@ -225,12 +225,12 @@ export default function AuthPage() {
                       max={maxDobDate()}
                       onChange={(e) => setDob(e.target.value)}
                       placeholder="Date of Birth"
-                      className="w-full rounded-full bg-slate-800 px-4 py-2.5 text-sm text-white placeholder:text-slate-500 outline-none appearance-none"
+                      className="w-full rounded-full bg-slate-800 px-3 sm:px-4 py-2 sm:py-2.5 text-sm text-white placeholder:text-slate-500 outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-opacity-50 transition appearance-none"
                     />
-                    <p className="mt-1 ml-4 text-xs text-slate-500">Use the date picker format.</p>
+                    <p className="mt-0.5 ml-2 sm:ml-4 text-xs text-slate-500">Use the date picker format.</p>
                   </div>
                   <div>
-                    <label htmlFor="phone" className="mb-1 ml-4 block text-sm font-medium text-slate-400">Phone Number</label>
+                    <label htmlFor="phone" className="mb-1 ml-2 sm:ml-4 block text-xs sm:text-sm font-medium text-slate-400">Phone Number</label>
                     <input
                       id="phone"
                       required
@@ -238,7 +238,7 @@ export default function AuthPage() {
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                       placeholder="Phone number"
-                      className="w-full rounded-full bg-slate-800 px-4 py-2.5 text-sm text-white placeholder:text-slate-500 outline-none"
+                      className="w-full rounded-full bg-slate-800 px-3 sm:px-4 py-2 sm:py-2.5 text-sm text-white placeholder:text-slate-500 outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-opacity-50 transition"
                     />
                   </div>
                 </div>
@@ -246,7 +246,7 @@ export default function AuthPage() {
 
               {mode === "login" ? (
                 <div>
-                  <label htmlFor="email-login" className="mb-1 ml-4 block text-sm font-medium text-slate-400">Email</label>
+                  <label htmlFor="email-login" className="mb-1 ml-2 sm:ml-4 block text-xs sm:text-sm font-medium text-slate-400">Email</label>
                   <input
                     id="email-login"
                     required
@@ -255,13 +255,13 @@ export default function AuthPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="Email address"
-                    className="w-full rounded-full bg-slate-800 px-4 py-2.5 text-sm text-white placeholder:text-slate-500 outline-none"
+                    className="w-full rounded-full bg-slate-800 px-3 sm:px-4 py-2 sm:py-2.5 text-sm text-white placeholder:text-slate-500 outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-opacity-50 transition"
                   />
-                  <p className="mt-1 ml-4 text-xs text-slate-500">Use the email you registered with.</p>
+                  <p className="mt-0.5 ml-2 sm:ml-4 text-xs text-slate-500">Use the email you registered with.</p>
                 </div>
               ) : (
                 <div>
-                  <label htmlFor="email" className="mb-1 ml-4 block text-sm font-medium text-slate-400">Email</label>
+                  <label htmlFor="email" className="mb-1 ml-2 sm:ml-4 block text-xs sm:text-sm font-medium text-slate-400">Email</label>
                   <input
                     id="email"
                     required
@@ -269,13 +269,13 @@ export default function AuthPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="Enter Your Email"
-                    className="w-full rounded-full bg-slate-800 px-4 py-2.5 text-sm text-white placeholder:text-slate-500 outline-none"
+                    className="w-full rounded-full bg-slate-800 px-3 sm:px-4 py-2 sm:py-2.5 text-sm text-white placeholder:text-slate-500 outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-opacity-50 transition"
                   />
                 </div>
               )}
 
               <div>
-                <label htmlFor="password" className="block text-sm font-medium text-slate-400 mb-1 ml-4">Password</label>
+                <label htmlFor="password" className="block text-xs sm:text-sm font-medium text-slate-400 mb-1 ml-2 sm:ml-4">Password</label>
                 <input
                   id="password"
                   required
@@ -283,13 +283,13 @@ export default function AuthPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Password"
-                  className="w-full rounded-full bg-slate-800 px-4 py-2.5 text-sm text-white placeholder:text-slate-500 outline-none"
+                  className="w-full rounded-full bg-slate-800 px-3 sm:px-4 py-2 sm:py-2.5 text-sm text-white placeholder:text-slate-500 outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-opacity-50 transition"
                 />
               </div>
 
               {mode === "signup" && (
                 <div>
-                  <label htmlFor="repeatPassword" className="block text-sm font-medium text-slate-400 mb-1 ml-4">Confirm Password</label>
+                  <label htmlFor="repeatPassword" className="block text-xs sm:text-sm font-medium text-slate-400 mb-1 ml-2 sm:ml-4">Confirm Password</label>
                   <input
                     id="repeatPassword"
                     required
@@ -297,17 +297,17 @@ export default function AuthPage() {
                     value={repeatPassword}
                     onChange={(e) => setRepeatPassword(e.target.value)}
                     placeholder="Confirm Password"
-                    className="w-full rounded-full bg-slate-800 px-4 py-2.5 text-sm text-white placeholder:text-slate-500 outline-none"
+                    className="w-full rounded-full bg-slate-800 px-3 sm:px-4 py-2 sm:py-2.5 text-sm text-white placeholder:text-slate-500 outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-opacity-50 transition"
                   />
                 </div>
               )}
 
-              {error && <p className="text-sm text-red-500">{error}</p>}
+              {error && <p className="text-xs sm:text-sm text-red-500 mt-2">{error}</p>}
 
               <button
                 type="submit"
                 disabled={isLoading}
-                className="mt-3 w-full rounded-full bg-yellow-400 px-6 py-2.5 text-sm font-semibold text-slate-950 transition hover:bg-yellow-300 disabled:opacity-60 sm:py-3"
+                className="mt-2 sm:mt-3 w-full rounded-full bg-yellow-400 px-4 sm:px-6 py-2 sm:py-2.5 text-sm sm:text-sm font-semibold text-slate-950 transition hover:bg-yellow-300 disabled:opacity-60 disabled:cursor-not-allowed active:scale-95"
               >
                 {isLoading ? "Processing..." : mode === "signup" ? "Create an Account" : "Log In"}
               </button>
