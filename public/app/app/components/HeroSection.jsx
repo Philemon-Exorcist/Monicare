@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-// import heroImage from "../assets/hero.png";
+import heroImage from "../assets/istockphoto-1717120374-1024x1024.jpg";
 
 const stats = [
   { label: "Instant Formation", value: "Build your group in seconds" },
@@ -42,13 +42,16 @@ export default function HeroSection() {
         </div>
 
         <div className="mt-6 flex w-full flex-1 items-center justify-center rounded-[2rem] bg-yellow-400 px-6 py-10 lg:mt-0 lg:justify-end lg:rounded-l-none lg:rounded-r-[2rem] lg:px-12 lg:py-16">
-            {/* <Image
+          <div className="relative h-[320px] w-full overflow-hidden rounded-[1.4rem] sm:h-[420px] lg:h-full">
+            <Image
               src={heroImage}
-              alt="Monicare hero illustration"
-              className="h-full w-full rounded-[1.4rem] object-cover"
+              alt="Monicare community savings illustration"
+              fill
               priority
-            /> */}
-          
+              sizes="(max-width: 1023px) 100vw, 50vw"
+              className="object-cover"
+            />
+          </div>
         </div>
       </div>
     </section>
