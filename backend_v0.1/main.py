@@ -44,18 +44,24 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
         field = location[-1] if location else "field"
         error_type = error.get("type", "")
         message = error.get("msg", "Invalid value.")
+        ctx = error.get("ctx") or {}
 
-        if error_type == "string_too_long" and error.get("ctx", {}).get("max_length"):
-            message = f"{field} must be at most {error['ctx']['max_length']} characters long."
-        elif error_type == "string_too_short" and error.get("ctx", {}).get("min_length"):
-            message = f"{field} must be at least {error['ctx']['min_length']} characters long."
+        if error_type == "string_too_long" and ctx.get("max_length"):
+            message = f"{field} must be at most {ctx['max_length']} characters long."
+        elif error_type == "string_too_short" and ctx.get("min_length"):
+            message = f"{field} must be at least {ctx['min_length']} characters long."
         elif error_type == "value_error":
             message = message.replace("Value error, ", "")
+
+        safe_ctx = {}
+        for key, value in ctx.items():
+            safe_ctx[key] = str(value) if isinstance(value, Exception) else value
 
         readable_errors.append({
             "field": field,
             "message": message,
             "type": error_type,
+            "ctx": safe_ctx or None,
         })
 
     friendly_message = "Please fix the highlighted form fields and try again."
@@ -73,7 +79,15 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
         content={
             "message": friendly_message,
             "errors": readable_errors,
-            "detail": errors,
+            "detail": [
+                {
+                    "loc": list(error.get("loc", [])),
+                    "msg": error.get("msg", "Invalid value."),
+                    "type": error.get("type", "value_error"),
+                    "ctx": {key: (str(value) if isinstance(value, Exception) else value) for key, value in (error.get("ctx") or {}).items()} or None,
+                }
+                for error in errors
+            ],
         },
     )
 
@@ -127,6 +141,5 @@ if __name__ == "__main__":
 
     print(f"Booting server on port {port} | Production Mode: {is_cloud_run or is_render}")
     uvicorn.run("main:app", host="0.0.0.0", port=port, reload=reload_setting)
-
 
 
