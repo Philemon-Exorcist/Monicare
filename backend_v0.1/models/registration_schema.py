@@ -59,10 +59,6 @@ class UserLoginCredentials(BaseModel):
 
 
 class UserSignUpPayload(UserAuthCredentials):
-    user_id: str | None = Field(
-        default=None,
-        description="Optional authenticated UUID string from Supabase Auth"
-    )
     first_name: str = Field(..., min_length=2, max_length=50)
     middle_name: str | None = Field(default=None, max_length=50)
     last_name: str = Field(..., min_length=2, max_length=50)
@@ -131,7 +127,6 @@ class UserSignUpPayload(UserAuthCredentials):
             
         return cleaned_value
     
-
 
 
 
