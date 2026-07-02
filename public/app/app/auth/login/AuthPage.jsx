@@ -20,24 +20,22 @@ export default function AuthPage() {
   const [dob, setDob] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const router = useRouter();
 
   useEffect(() => {
-    // Check URL hash on component mount
     if (typeof window !== "undefined") {
-      const hash = window.location.hash.slice(1); // Remove the # character
-      if (hash === "login" || hash === "signup") {
-        setMode(hash);
+      const newHash = window.location.hash.slice(1);
+      if (newHash === "login" || newHash === "signup") {
+        setMode(newHash);
       }
 
-      // Listen for hash changes
       const handleHashChange = () => {
         const newHash = window.location.hash.slice(1);
         if (newHash === "login" || newHash === "signup") {
           setMode(newHash);
         }
       };
-
       window.addEventListener("hashchange", handleHashChange);
       return () => window.removeEventListener("hashchange", handleHashChange);
     }
@@ -68,6 +66,7 @@ export default function AuthPage() {
     event.preventDefault();
     setIsLoading(true);
     setError("");
+    setSuccess("");
 
     try {
       if (mode === "signup") {
@@ -87,7 +86,7 @@ export default function AuthPage() {
           throw new Error("You must be at least 18 years old to sign up.");
         }
 
-        await submitAuth(
+        const signupResponse = await submitAuth(
           {
             first_name: fullName.trim(),
             last_name: lastName.trim(),
@@ -100,15 +99,36 @@ export default function AuthPage() {
           },
           mode
         );
+
+        setPassword("");
+        setRepeatPassword("");
+        setMode("login");
+
+        if (typeof window !== "undefined") {
+          window.location.hash = "login";
+        }
+
+        setSuccess(
+          signupResponse?.message ||
+            "Account created successfully. Please log in with your phone number and password."
+        );
       } else {
         if (!phone.trim()) {
           throw new Error("Please enter your phone number.");
         }
 
-        await submitAuth({ phone_no: phone.trim(), password }, mode);
-      }
+        const loginResponse = await submitAuth({ phone_no: phone.trim(), password }, mode);
+        const authData = loginResponse?.data;
 
-      router.push("/");
+        if (typeof window !== "undefined" && authData?.access_token) {
+          window.localStorage.setItem("monicare_access_token", authData.access_token);
+          window.localStorage.setItem("monicare_refresh_token", authData.refresh_token || "");
+          window.localStorage.setItem("monicare_user_id", authData.user_id || "");
+        }
+
+        setSuccess(loginResponse?.message || "Login successful.");
+        router.push("/dashboard");
+      }
     } catch (error) {
       const message =
         typeof error?.message === "string"
@@ -144,8 +164,14 @@ export default function AuthPage() {
           </div>
         </div>
 
-        <div className="flex w-full flex-col items-center justify-center overflow-y-auto bg-slate-900 px-3 py-4 shadow-xl sm:px-6 sm:py-6 lg:w-1/2 lg:px-8 lg:py-8">
-          <div className="w-full max-w-[90vw] sm:max-w-[85vw] md:max-w-[80vw] lg:max-w-[440px] rounded-2xl border border-white/10 bg-slate-900/95 p-3 shadow-2xl backdrop-blur sm:rounded-[1.5rem] sm:p-6 lg:p-8 max-h-[90vh] overflow-y-auto">
+        <div className="flex w-full flex-col items-center justify-start overflow-y-auto bg-slate-900 px-3 py-4 shadow-xl sm:px-6 sm:py-6 lg:w-1/2 lg:items-center lg:justify-center lg:px-8 lg:py-8">
+          <div
+            className={`w-full max-w-[90vw] rounded-2xl border border-white/10 bg-slate-900/95 p-3 shadow-2xl backdrop-blur sm:rounded-[1.5rem] sm:p-6 lg:p-8 ${
+              mode === "signup"
+                ? "sm:max-w-[88vw] md:max-w-[78vw] lg:max-w-[640px]"
+                : "sm:max-w-[85vw] md:max-w-[80vw] lg:max-w-[440px]"
+            }`}
+          >
             <div className="mb-3 flex flex-col gap-2 sm:mb-4 sm:gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <Link href="/" className="inline-flex items-center gap-2 text-xs sm:text-sm text-white hover:text-yellow-300 transition">
@@ -157,13 +183,21 @@ export default function AuthPage() {
               </div>
               <div className="flex w-full flex-wrap items-center justify-center gap-1.5 sm:w-auto sm:gap-2 sm:justify-end">
                 <button
-                  onClick={() => setMode("signup")}
+                  onClick={() => {
+                    setMode("signup");
+                    setError("");
+                    setSuccess("");
+                  }}
                   className={`${mode === "signup" ? "bg-yellow-400 text-slate-950" : "bg-transparent text-slate-400"} rounded-full px-3 py-1 text-xs sm:px-4 sm:py-1 sm:text-sm font-semibold transition hover:text-slate-200`}
                 >
                   Sign Up
                 </button>
                 <button
-                  onClick={() => setMode("login")}
+                  onClick={() => {
+                    setMode("login");
+                    setError("");
+                    setSuccess("");
+                  }}
                   className={`${mode === "login" ? "bg-yellow-400 text-slate-950" : "bg-transparent text-slate-400"} rounded-full px-3 py-1 text-xs sm:px-4 sm:py-1 sm:text-sm font-semibold transition hover:text-slate-200`}
                 >
                   Log In
@@ -173,7 +207,7 @@ export default function AuthPage() {
 
             <h2 className="mb-3 text-center text-lg sm:mb-4 sm:text-xl font-semibold sm:text-left">{mode === "signup" ? "Create An Account" : "Welcome Back"}</h2>
 
-            <form onSubmit={handleSubmit} className="space-y-2 sm:space-y-3">
+            <form onSubmit={handleSubmit} className={mode === "signup" ? "space-y-2 sm:space-y-3" : "space-y-2 sm:space-y-3"}>
               {mode === "signup" && (
                 <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3">
                   <div>
@@ -275,7 +309,7 @@ export default function AuthPage() {
                     autoComplete="tel"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    placeholder="Phone number"
+                    placeholder="08012345678"
                     className="w-full rounded-full bg-slate-800 px-3 sm:px-4 py-2 sm:py-2.5 text-sm text-white placeholder:text-slate-500 outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-opacity-50 transition"
                   />
                   <p className="mt-0.5 ml-2 sm:ml-4 text-xs text-slate-500">Use the phone number you registered with.</p>
@@ -309,7 +343,7 @@ export default function AuthPage() {
               </div>
 
               {mode === "signup" && (
-                <div>
+                <div className="sm:col-span-2">
                   <label htmlFor="repeatPassword" className="block text-xs sm:text-sm font-medium text-slate-400 mb-1 ml-2 sm:ml-4">Confirm Password</label>
                   <input
                     id="repeatPassword"
@@ -324,6 +358,7 @@ export default function AuthPage() {
               )}
 
               {error && <p className="text-xs sm:text-sm text-red-500 mt-2">{error}</p>}
+              {success && <p className="text-xs sm:text-sm text-emerald-400 mt-2">{success}</p>}
 
               <button
                 type="submit"

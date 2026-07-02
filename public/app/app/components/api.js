@@ -3,7 +3,11 @@ const BASE_URL = (process.env.NEXT_PUBLIC_API_BASE_URL || "https://monicare.onre
 function humanizeValidationError(detail) {
   if (Array.isArray(detail) && detail.length > 0) {
     const messages = detail.map((entry) => {
-      const field = Array.isArray(entry?.loc) ? entry.loc[entry.loc.length - 1] : "field";
+      const field = Array.isArray(entry?.loc) ? entry.loc[entry.loc.length - 1] : entry?.field || "field";
+
+      if (typeof entry?.message === "string") {
+        return entry.message;
+      }
 
       if (entry?.type === "string_too_long" && entry?.ctx?.max_length) {
         return `${field.toUpperCase()} must be at most ${entry.ctx.max_length} characters long.`;
