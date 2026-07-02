@@ -1,3 +1,4 @@
+import json
 import logging
 from integrations.nomba_client import NombaAPIClient
 from models.nomba_schema import NombaVirtualAccountRequest
@@ -16,15 +17,19 @@ async def create_virtual_account(user_uuid: str, first_name: str, last_name: str
     
     # Build clean name styling spacing strings
     middle_part = f" {middle_name} " if middle_name and middle_name.strip() else " "
-    full_account_name = f"Akawo - {first_name.strip()}{middle_part}{last_name.strip()}"
-    
+    full_account_name = f"Monicare - {first_name.strip()}{middle_part}{last_name.strip()}"
+    clean_name = full_account_name[:40].strip()
     # Instantiate using correct Python field definitions matching the schema update above
     nomba_payload = NombaVirtualAccountRequest(
-        account_name=full_account_name,
+        account_name=clean_name,
         email=email,
         signing_bank="WEMA",
-        account_ref=tracking_reference  # FIX: Changed from account_reference to account_ref
-    )
+        account_ref=tracking_reference  ,# FIX: Changed from account_reference to account_ref
+        currency="NGN"  # Fixed
+        )
+
+    # DEBUG TRACE: Print exactly what we send to Nomba to the logs
+    logger.info(f"OUTBOUND NOMBA JSON PAYLOAD: {json.dumps(nomba_payload.model_dump(by_alias=True))}")
     
     try:
         nomba_result = await nomba_client.create_user_virtual_account(nomba_payload)

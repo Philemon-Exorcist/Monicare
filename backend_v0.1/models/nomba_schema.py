@@ -13,6 +13,8 @@ class NombaVirtualAccountRequest(BaseModel):
     email: str
     signing_bank: str = Field(default="WEMA", alias="signingBank")
     account_ref: str = Field(alias="accountRef")  # FIX: Sub-account endpoint expects accountRef, NOT accountReference
+    currency: str = Field(default="NGN", alias="currency")  # FIXED: Explicit currency tracking enforced
+
 
     model_config = {
         "populate_by_name": True
