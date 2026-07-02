@@ -28,4 +28,4 @@ class NombaWebhookPayload(BaseModel):
     event: str # e.g., "virtual_account.payment_received"
     message: str
     data: NombaPaymentData
-
+ 
