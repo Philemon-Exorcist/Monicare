@@ -3,32 +3,39 @@ from pydantic import BaseModel, Field
 from typing import Optional
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-# ─── WHAT YOU SEND TO NOMBA ───
+
+
+
+# ─── PYDANTIC SCHEMAS ───
 class NombaVirtualAccountRequest(BaseModel):
-    account_name: str = Field(alias="accountName") # Maps Python snake_case to Nomba's camelCase
+    # CRITICAL: Maps Python variables precisely to Nomba sub-account JSON expectations
+    account_name: str = Field(alias="accountName")
     email: str
     signing_bank: str = Field(default="WEMA", alias="signingBank")
-    account_reference: str = Field(alias="accountReference")
+    account_ref: str = Field(alias="accountRef")  # FIX: Sub-account endpoint expects accountRef, NOT accountReference
+    currency: str = Field(default="NGN", alias="currency")  # FIXED: Explicit currency tracking enforced
 
-    # This configuration configuration allows Pydantic to read both camelCase and snake_case keys
+
     model_config = {
         "populate_by_name": True
     }
 
 
-# ─── INTERNAL METADATA INSIDE NOMBA'S RESPONSE ───
 class NombaAccountData(BaseModel):
+    account_holder_id: Optional[str] = Field(default=None, alias="accountHolderId")
     account_name: str = Field(alias="accountName")
-    account_number: str = Field(alias="accountNumber")
+    account_number: Optional[str] = Field(default=None, alias="bankAccountNumber")  # Maps NUBAN number
     bank_name: str = Field(alias="bankName")
-    account_reference: str = Field(alias="accountReference")
+    account_reference: str = Field(alias="accountRef")
+    currency: Optional[str] = Field(default="NGN")
+    expired: Optional[bool] = Field(default=False)
 
-
-# ─── WHAT NOMBA RETURNS TO YOU ───
+# ─── THE NEW ROBUST ENVELOPE SCHEMA ───
 class NombaVirtualAccountResponse(BaseModel):
-    status: str
-    message: str
-    data: NombaAccountData
+    code: str  # "00" means absolute success, other codes mean validation failures
+    description: str  # Clear error message string from Nomba engineers
+    status: Optional[bool] = None
+    data: Optional[NombaAccountData] = None  # Populated only if code == "00"
     
     model_config = {
         "populate_by_name": True
@@ -36,12 +43,12 @@ class NombaVirtualAccountResponse(BaseModel):
 
 
 class AppSettings(BaseSettings):
-    # Enforces that these strings must be present in your .env file
     NOMBA_BASE_URL: str
+    NOMBA_SANDBOX_URL: str
     NOMBA_LIVE_CLIENT_ID: str = Field(alias="NOMBA_LIVE_ClIENT_ID")
     NOMBA_LIVE_PRIVATE_KEY: str = Field(alias="NOMBA_LIVE_PRIVATE_KEY")
     Main_Account_ID: str
-    NOMBA_SUB_ACCOUNT_ID: str | None = None
+    NOMBA_SUB_ACCOUNT_ID: str  # Mandatory for sub-account-scoped creation
 
     model_config = SettingsConfigDict(
         env_file=".env",
@@ -50,8 +57,4 @@ class AppSettings(BaseSettings):
         populate_by_name=True,
     )
 
-# Initialize a single, reusable instance of your settings
 settings = AppSettings()
-
-
-
