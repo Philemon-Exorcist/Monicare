@@ -31,11 +31,11 @@ export default function Header() {
           </Link>
         </nav>
         <div className="hidden items-center gap-8 md:flex">
-          <Link href="/auth/login" className="text-sm font-semibold text-white transition hover:text-yellow-300">
+          <Link href="/auth/login#login" className="text-sm font-semibold text-white transition hover:text-yellow-300">
             Login
           </Link>
           <Link
-            href="/auth/login"
+            href="/auth/login#signup"
             className="inline-flex items-center rounded-full bg-yellow-400 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-yellow-300"
           >
             Get Started
@@ -85,14 +85,14 @@ export default function Header() {
 
             <div className="flex flex-col gap-4 border-t border-white/10 p-6">
               <Link
-                href="/auth/login"
+                href="/auth/login#login"
                 onClick={() => setIsMenuOpen(false)}
                 className="inline-flex items-center justify-center rounded-full border border-white/20 px-5 py-3 text-base font-semibold text-white transition hover:bg-white/10"
               >
                 Login
               </Link>
               <Link
-                href="/auth/login"
+                href="/auth/login#signup"
                 onClick={() => setIsMenuOpen(false)}
                 className="inline-flex items-center justify-center rounded-full bg-yellow-400 px-5 py-3 text-base font-semibold text-slate-950 transition hover:bg-yellow-300"
               >

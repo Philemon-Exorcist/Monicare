@@ -12,7 +12,7 @@ export default function Cta() {
           </p>
           <div className="mt-10">
             <Link
-              href="/auth/login"
+              href="/auth/login#signup"
               className="inline-flex items-center justify-center rounded-full bg-slate-950 px-8 py-4 text-base font-semibold text-white transition hover:bg-slate-900"
             >
               Create Your Savings Link

@@ -30,7 +30,7 @@ export default function Footer() {
       <div className="mx-auto mt-8 flex max-w-7xl flex-col gap-3 border-t border-white/10 pt-6 text-sm text-slate-500 md:flex-row md:items-center md:justify-between">
         <p>© 2026 Monicare. All rights reserved.</p>
         <div className="flex gap-4">
-          <Link href="/auth/login" className="transition hover:text-yellow-300">
+          <Link href="/auth/login#signup" className="transition hover:text-yellow-300">
             Get started
           </Link>
           <a href="mailto:hello@monicare.com" className="transition hover:text-yellow-300">
