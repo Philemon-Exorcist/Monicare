@@ -203,7 +203,7 @@ async def user_login(payload: UserLoginCredentials):
 
         return {
             "status": "success",
-            "message": "User session authenticated completely.",
+            "message": "Login Successful",
             "data": {
                 "user_id": user_uuid,
                 "access_token": access_token,
