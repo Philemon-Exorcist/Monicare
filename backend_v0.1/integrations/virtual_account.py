@@ -11,24 +11,28 @@ async def create_virtual_account(user_uuid: str, first_name: str, last_name: str
     Isolated business logic function that communicates with Nomba's API 
     and returns a clean dictionary containing the fresh bank details.
     """
+     
     tracking_reference = f"USER_REF_{user_uuid}"
     
-    # Clean up and space the middle name correctly if it exists
+    # Build clean name styling spacing strings
     middle_part = f" {middle_name} " if middle_name and middle_name.strip() else " "
-    full_account_name = f"Monicare - {first_name.strip()}{middle_part}{last_name.strip()}"
+    full_account_name = f"Akawo - {first_name.strip()}{middle_part}{last_name.strip()}"
     
-    # FIX: Instantiating the Pydantic object using its native Python snake_case keys
+    # Instantiate using correct Python field definitions matching the schema update above
     nomba_payload = NombaVirtualAccountRequest(
         account_name=full_account_name,
         email=email,
         signing_bank="WEMA",
-        account_reference=tracking_reference
+        account_ref=tracking_reference  # FIX: Changed from account_reference to account_ref
     )
     
     try:
-        # Fire request through your core integration proxy instance
         nomba_result = await nomba_client.create_user_virtual_account(nomba_payload)
         
+        # Check if internal business validation passed
+        if nomba_result.code != "00":
+            return {"success": False, "error_reason": nomba_result.description}
+            
         return {
             "success": True,
             "account_number": nomba_result.data.account_number,
@@ -36,13 +40,10 @@ async def create_virtual_account(user_uuid: str, first_name: str, last_name: str
             "account_ref": tracking_reference
         }
     except Exception as gateway_err:
-        # Catches network, HTTP, or validation errors cleanly
         logger.error(f"Failed to generate Nomba node for user {user_uuid}: {gateway_err}", exc_info=True)
         return {
             "success": False,
-            "account_number": "FAILED_VA_PROVISIONING",
-            "bank_name": "UNKNOWN",
-            "account_ref": tracking_reference
+            "error_reason": str(gateway_err)
         }
-
-
+   
+   

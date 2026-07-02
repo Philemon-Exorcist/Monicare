@@ -7,14 +7,16 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 # ─── PYDANTIC SCHEMAS ───
-
 class NombaVirtualAccountRequest(BaseModel):
-    account_name: str = Field(alias="accountName") 
+    # CRITICAL: Maps Python variables precisely to Nomba sub-account JSON expectations
+    account_name: str = Field(alias="accountName")
     email: str
     signing_bank: str = Field(default="WEMA", alias="signingBank")
-    account_reference: str = Field(alias="accountReference")
+    account_ref: str = Field(alias="accountRef")  # FIX: Sub-account endpoint expects accountRef, NOT accountReference
 
-    model_config = {"populate_by_name": True}
+    model_config = {
+        "populate_by_name": True
+    }
 
 
 class NombaAccountData(BaseModel):
