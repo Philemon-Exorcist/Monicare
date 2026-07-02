@@ -70,7 +70,7 @@ class NombaAPIClient:
             "Content-Type": "application/json"
         }
         
-        json_data = request_payload.model_dump(by_alias=True)
+        json_data = request_payload.model_dump(by_alias=True, exclude_none=True)
         
         async with httpx.AsyncClient() as client:
             try:
