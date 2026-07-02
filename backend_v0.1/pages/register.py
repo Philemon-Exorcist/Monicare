@@ -109,10 +109,9 @@ async def signup_and_create_account(payload: UserSignUpPayload):
             logger.error(f"Failed to rollback auth user {generated_uuid}: {rollback_err}")
         raise HTTPException(status_code=500, detail="Profile record synchronization failed.")
 
-    # 5. BANK PROVISIONING
 
+        # 5. BANK PROVISIONING
     try:
-        # Pass the raw payload strings and generated UUID straight to the wrapper function
         nomba_result = await create_virtual_account(
             user_uuid=generated_uuid,
             first_name=payload.first_name,
@@ -121,15 +120,12 @@ async def signup_and_create_account(payload: UserSignUpPayload):
             middle_name=payload.middle_name
         )
 
-        # Check if the wrapper internal try-except marked the request as a success
         if not nomba_result.get("success"):
-            # If the client caught an issue internally, raise it to drop to the outer except block
-            raise Exception("Nomba client proxy reported a provisioning failure.")
+            raise Exception(f"Provisioning Failed: {nomba_result.get('error_reason', 'Unknown API Error')}")
 
         account_number = nomba_result["account_number"]
         bank_name = nomba_result["bank_name"]
 
-        # Update your Supabase profile record with the fresh bank details
         supabase_admin.table("profiles").update({
             "nomba_virtual_account": account_number,
             "nomba_bank_name": bank_name
@@ -144,9 +140,8 @@ async def signup_and_create_account(payload: UserSignUpPayload):
         }
 
     except Exception as gateway_err:
-        logger.error(f"Nomba banking engine timed out for user {generated_uuid}: {gateway_err}")
+        logger.error(f"Nomba banking engine tracking failed for user {generated_uuid}: {gateway_err}")
         
-        # Soft fallback: Save marker state to database so a cron/worker can retry it later
         supabase_admin.table("profiles").update({
             "nomba_virtual_account": "FAILED_VA_PROVISIONING",
             "nomba_bank_name": "UNKNOWN"
@@ -154,12 +149,11 @@ async def signup_and_create_account(payload: UserSignUpPayload):
 
         return {
             "status": "partial_success",
-            "message": "Profile verified and created successfully. Wallet number generating in background.",
+            "message": f"Profile created. Wallet allocation pending background processing.",
             "user_id": generated_uuid
         }
-    else:
-        logger.info(f"User {generated_uuid} successfully signed up and provisioned.")
-        raise HTTPException(status_code=status.HTTP_201_CREATED, detail="Signup and wallet creation completed successfully.")
+
+
 
 
 

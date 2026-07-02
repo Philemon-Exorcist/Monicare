@@ -58,14 +58,11 @@ class NombaAPIClient:
     async def create_user_virtual_account(self, request_payload: NombaVirtualAccountRequest) -> NombaVirtualAccountResponse:
         """Fires payload to the sub-account virtual account endpoint"""
         token = await self._get_oauth_token()
-
+        
         if self.sub_account_id:
             url = f"{self.base_url}/v1/accounts/virtual/{self.sub_account_id}"
         else:
             url = f"{self.base_url}/v1/accounts/virtual"
-        
-        # CRITICAL FIX: Appended sub_account_id path variable parameter
-        #url = f"{self.base_url}/v1/accounts/virtual/{self.sub_account_id}"
         
         headers = {
             "Authorization": f"Bearer {token}",
@@ -79,18 +76,19 @@ class NombaAPIClient:
             try:
                 response = await client.post(url, json=json_data, headers=headers)
                 response.raise_for_status()
-                return NombaVirtualAccountResponse.model_validate(response.json())
-            except httpx.HTTPStatusError as http_err:
-                # This unwraps the exact reason Nomba rejected your account parameters
-                status_code = http_err.response.status_code
-                raw_response = http_err.response.text
-                logger.error(f"Nomba API Rejected Creation. Status: {status_code} | Response: {raw_response}")
-                raise Exception(f"Nomba API Error [{status_code}]: {raw_response}")
                 
-            except Exception as e:
-                logger.error(f"Unexpected connection failure with Nomba: {str(e)}")
-                raise e
-
-
+                # Dynamic translation from Nomba's body payload
+                parsed_response = NombaVirtualAccountResponse.model_validate(response.json())
+                
+                # Check for logical validation failures inside Nomba's 200 response
+                if parsed_response.code != "00":
+                    logger.error(f"Nomba Business Logic Rejection. Code: {parsed_response.code} | Reason: {parsed_response.description}")
+                    raise Exception(f"Nomba Rejection ({parsed_response.code}): {parsed_response.description}")
+                
+                return parsed_response
+                
+            except httpx.HTTPStatusError as http_err:
+                logger.error(f"Nomba HTTP Layer Error: {http_err.response.text}")
+                raise Exception(f"Nomba Network Error: {http_err.response.text}")
 
 

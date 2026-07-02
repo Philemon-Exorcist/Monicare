@@ -324,3 +324,94 @@ async def create_virtual_account(user_uuid: str, first_name: str, last_name: str
             "user_id": generated_uuid
         }
 
+
+
+
+#   """Fires payload to the sub-account virtual account endpoint"""
+        token = await self._get_oauth_token()
+
+        if self.sub_account_id:
+            url = f"{self.base_url}/v1/accounts/virtual/{self.sub_account_id}"
+        else:
+            url = f"{self.base_url}/v1/accounts/virtual"
+        
+        # CRITICAL FIX: Appended sub_account_id path variable parameter
+        #url = f"{self.base_url}/v1/accounts/virtual/{self.sub_account_id}"
+        
+        headers = {
+            "Authorization": f"Bearer {token}",
+            "accountId": self.parent_account_id,
+            "Content-Type": "application/json"
+        }
+        
+        json_data = request_payload.model_dump(by_alias=True)
+        
+        async with httpx.AsyncClient() as client:
+            try:
+                response = await client.post(url, json=json_data, headers=headers)
+                response.raise_for_status()
+                return NombaVirtualAccountResponse.model_validate(response.json())
+            except httpx.HTTPStatusError as http_err:
+                # This unwraps the exact reason Nomba rejected your account parameters
+                status_code = http_err.response.status_code
+                raw_response = http_err.response.text
+                logger.error(f"Nomba API Rejected Creation. Status: {status_code} | Response: {raw_response}")
+                raise Exception(f"Nomba API Error [{status_code}]: {raw_response}")
+                
+            except Exception as e:
+                logger.error(f"Unexpected connection failure with Nomba: {str(e)}")
+                raise e
+
+
+
+# 5. BANK PROVISIONING
+
+    try:
+        # Pass the raw payload strings and generated UUID straight to the wrapper function
+        nomba_result = await create_virtual_account(
+            user_uuid=generated_uuid,
+            first_name=payload.first_name,
+            last_name=payload.last_name,
+            email=payload.email,
+            middle_name=payload.middle_name
+        )
+
+        # Check if the wrapper internal try-except marked the request as a success
+        if not nomba_result.get("success"):
+            # If the client caught an issue internally, raise it to drop to the outer except block
+            raise Exception("Nomba client proxy reported a provisioning failure.")
+
+        account_number = nomba_result["account_number"]
+        bank_name = nomba_result["bank_name"]
+
+        # Update your Supabase profile record with the fresh bank details
+        supabase_admin.table("profiles").update({
+            "nomba_virtual_account": account_number,
+            "nomba_bank_name": bank_name
+        }).eq("id", generated_uuid).execute()
+
+        return {
+            "status": "success",
+            "message": "User wallet infrastructure initialized completely.",
+            "user_id": generated_uuid,
+            "virtual_account": account_number,
+            "bank": bank_name
+        }
+
+    except Exception as gateway_err:
+        logger.error(f"Nomba banking engine timed out for user {generated_uuid}: {gateway_err}")
+        
+        # Soft fallback: Save marker state to database so a cron/worker can retry it later
+        supabase_admin.table("profiles").update({
+            "nomba_virtual_account": "FAILED_VA_PROVISIONING",
+            "nomba_bank_name": "UNKNOWN"
+        }).eq("id", generated_uuid).execute()
+
+        return {
+            "status": "partial_success",
+            "message": "Profile verified and created successfully. Wallet number generating in background.",
+            "user_id": generated_uuid
+        }
+    else:
+        logger.info(f"User {generated_uuid} successfully signed up and provisioned.")
+        raise HTTPException(status_code=status.HTTP_201_CREATED, detail="Signup and wallet creation completed successfully.")

@@ -16,18 +16,27 @@ class NombaVirtualAccountRequest(BaseModel):
 
     model_config = {"populate_by_name": True}
 
-class NombaAccountData(BaseModel):
-    account_name: str = Field(alias="accountName")
-    account_number: str = Field(alias="accountNumber")
-    bank_name: str = Field(alias="bankName")
-    account_reference: str = Field(alias="accountReference")
 
+class NombaAccountData(BaseModel):
+    account_holder_id: Optional[str] = Field(default=None, alias="accountHolderId")
+    account_name: str = Field(alias="accountName")
+    account_number: Optional[str] = Field(default=None, alias="bankAccountNumber")  # Maps NUBAN number
+    bank_name: str = Field(alias="bankName")
+    account_reference: str = Field(alias="accountRef")
+    currency: Optional[str] = Field(default="NGN")
+    expired: Optional[bool] = Field(default=False)
+
+# ─── THE NEW ROBUST ENVELOPE SCHEMA ───
 class NombaVirtualAccountResponse(BaseModel):
-    status: str
-    message: str
-    data: NombaAccountData
+    code: str  # "00" means absolute success, other codes mean validation failures
+    description: str  # Clear error message string from Nomba engineers
+    status: Optional[bool] = None
+    data: Optional[NombaAccountData] = None  # Populated only if code == "00"
     
-    model_config = {"populate_by_name": True}
+    model_config = {
+        "populate_by_name": True
+    }
+
 
 class AppSettings(BaseSettings):
     NOMBA_BASE_URL: str
