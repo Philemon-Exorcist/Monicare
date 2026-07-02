@@ -193,7 +193,7 @@ async def user_login(payload: UserLoginCredentials):
         }
 
     except Exception as auth_fail_error:
-        logger.warning(f"Failed authentication login attempt for email: {payload.email}. Trace: {auth_fail_error}")
+        logger.warning(f"Failed authentication login attempt for email: {payload.phone_no}. Trace: {auth_fail_error}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid Phone or Password credentials. Please check your inputs and try again."
