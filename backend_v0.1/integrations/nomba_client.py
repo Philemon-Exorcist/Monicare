@@ -4,6 +4,9 @@ from models.nomba_schema import settings
 from models.nomba_schema import NombaVirtualAccountRequest, NombaVirtualAccountResponse
 import time
 import os
+import logging
+
+logger = logging.getLogger("Monicare.nomba_client")
 
 class NombaAPIClient:
     def __init__(self):
@@ -37,23 +40,32 @@ class NombaAPIClient:
         }
         
         async with httpx.AsyncClient() as client:
-            response = await client.post(url, json=payload, headers=headers)
-            response.raise_for_status()
-            res_data = response.json()["data"]
-            
-            # CRITICAL FIX: Storing expiration window timestamp data
-            self._cached_token = res_data["access_token"]
-            expires_in = res_data.get("expires_in", 3600)  # Defaulting 1 hour safely
-            self._token_expires_at = current_time + expires_in
-            
-            return self._cached_token
+            try:
+                response = await client.post(url, json=payload, headers=headers)
+                response.raise_for_status()
+                res_data = response.json()["data"]
+                
+                # CRITICAL FIX: Storing expiration window timestamp data
+                self._cached_token = res_data["access_token"]
+                expires_in = res_data.get("expires_in", 3600)  # Defaulting 1 hour safely
+                self._token_expires_at = current_time + expires_in
+                
+                return self._cached_token
+            except httpx.HTTPStatusError as auth_err:
+                    logger.error(f"Nomba Auth Token Issue Failed. Status: {auth_err.response.status_code}, Body: {auth_err.response.text}")
+                    raise Exception(f"Nomba Authentication Failed: {auth_err.response.text}")
 
     async def create_user_virtual_account(self, request_payload: NombaVirtualAccountRequest) -> NombaVirtualAccountResponse:
         """Fires payload to the sub-account virtual account endpoint"""
         token = await self._get_oauth_token()
+
+        if self.sub_account_id:
+            url = f"{self.base_url}/v1/accounts/virtual/{self.sub_account_id}"
+        else:
+            url = f"{self.base_url}/v1/accounts/virtual"
         
         # CRITICAL FIX: Appended sub_account_id path variable parameter
-        url = f"{self.base_url}/v1/accounts/virtual/{self.sub_account_id}"
+        #url = f"{self.base_url}/v1/accounts/virtual/{self.sub_account_id}"
         
         headers = {
             "Authorization": f"Bearer {token}",
@@ -64,9 +76,20 @@ class NombaAPIClient:
         json_data = request_payload.model_dump(by_alias=True)
         
         async with httpx.AsyncClient() as client:
-            response = await client.post(url, json=json_data, headers=headers)
-            response.raise_for_status()
-            return NombaVirtualAccountResponse.model_validate(response.json())
+            try:
+                response = await client.post(url, json=json_data, headers=headers)
+                response.raise_for_status()
+                return NombaVirtualAccountResponse.model_validate(response.json())
+            except httpx.HTTPStatusError as http_err:
+                # This unwraps the exact reason Nomba rejected your account parameters
+                status_code = http_err.response.status_code
+                raw_response = http_err.response.text
+                logger.error(f"Nomba API Rejected Creation. Status: {status_code} | Response: {raw_response}")
+                raise Exception(f"Nomba API Error [{status_code}]: {raw_response}")
+                
+            except Exception as e:
+                logger.error(f"Unexpected connection failure with Nomba: {str(e)}")
+                raise e
 
 
 

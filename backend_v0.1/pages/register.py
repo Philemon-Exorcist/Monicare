@@ -59,11 +59,15 @@ async def signup_and_create_account(payload: UserSignUpPayload):
                 "phone_no": payload.phone_no # Helpful metadata sync
             }
         })
-      
-        if not user_record or not hasattr(user_record, "id"):
-            raise HTTPException(status_code=400, detail="Authentication signup failed.")
 
-        generated_uuid = user_record.id
+        created_user = getattr(user_record, "user", None) or user_record
+        generated_uuid = getattr(created_user, "id", None)
+        if not generated_uuid:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Authentication signup succeeded, but no user id was returned from Supabase."
+            )
+
         tracking_reference = f"USER_REF_{generated_uuid}"
 
     except Exception as auth_err:
@@ -171,7 +175,7 @@ async def user_login(payload: UserLoginCredentials):
 
     try:
         session_auth = supabase_admin.auth.sign_in_with_password({
-            "phone_no": payload.phone_no,
+            "phone": payload.phone_no,
             "password": payload.password
         })
 
@@ -193,7 +197,7 @@ async def user_login(payload: UserLoginCredentials):
         }
 
     except Exception as auth_fail_error:
-        logger.warning(f"Failed authentication login attempt for email: {payload.phone_no}. Trace: {auth_fail_error}")
+        logger.warning(f"Failed authentication login attempt for phone: {payload.phone_no}. Trace: {auth_fail_error}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid Phone or Password credentials. Please check your inputs and try again."
