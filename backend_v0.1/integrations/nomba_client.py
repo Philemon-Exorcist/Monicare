@@ -5,30 +5,27 @@ from models.nomba_schema import NombaVirtualAccountRequest, NombaVirtualAccountR
 import time
 import os
 
-
-
 class NombaAPIClient:
     def __init__(self):
+        self.sand_box_url = settings.NOMBA_SANDBOX_URL
         self.base_url = settings.NOMBA_BASE_URL
         self.client_id = settings.NOMBA_LIVE_CLIENT_ID
         self.client_secret = settings.NOMBA_LIVE_PRIVATE_KEY
         self.parent_account_id = settings.Main_Account_ID
+        self.sub_account_id = settings.NOMBA_SUB_ACCOUNT_ID
 
-        # Token Cache variables to protect network performance
         self._cached_token = None
         self._token_expires_at = 0
 
-
     async def _get_oauth_token(self) -> str:
-        """Internal helper function to fetch short-lived HTTP Bearer token"""
-
+        """Internal helper function with working cache timeout verification"""
         current_time = time.time()
         
-        # If we have a valid, unexpired token in memory, reuse it instantly!
-        if self._cached_token and current_time < self._token_expires_at:
+        # Buffer token expiration by 60 seconds for network latency protection
+        if self._cached_token and current_time < (self._token_expires_at - 60):
             return self._cached_token
 
-        url = f"{self.base_url}/auth/token/issue"
+        url = f"{self.base_url}/v1/auth/token/issue"  # Standardized route path structure
         headers = {
             "Content-Type": "application/json",
             "accountId": self.parent_account_id
@@ -42,15 +39,21 @@ class NombaAPIClient:
         async with httpx.AsyncClient() as client:
             response = await client.post(url, json=payload, headers=headers)
             response.raise_for_status()
-            return response.json()["data"]["access_token"]
+            res_data = response.json()["data"]
+            
+            # CRITICAL FIX: Storing expiration window timestamp data
+            self._cached_token = res_data["access_token"]
+            expires_in = res_data.get("expires_in", 3600)  # Defaulting 1 hour safely
+            self._token_expires_at = current_time + expires_in
+            
+            return self._cached_token
 
     async def create_user_virtual_account(self, request_payload: NombaVirtualAccountRequest) -> NombaVirtualAccountResponse:
-        """
-        Isolated function that receives  typed Pydantic request object,
-        fires it to Nomba, and returns a fully typed response object.
-        """
+        """Fires payload to the sub-account virtual account endpoint"""
         token = await self._get_oauth_token()
-        url = f"{self.base_url}/accounts/virtual"
+        
+        # CRITICAL FIX: Appended sub_account_id path variable parameter
+        url = f"{self.base_url}/v1/accounts/virtual/{self.sub_account_id}"
         
         headers = {
             "Authorization": f"Bearer {token}",
@@ -58,12 +61,13 @@ class NombaAPIClient:
             "Content-Type": "application/json"
         }
         
-        # .model_dump(by_alias=True) converts your code to true Nomba camelCase JSON format
         json_data = request_payload.model_dump(by_alias=True)
         
         async with httpx.AsyncClient() as client:
             response = await client.post(url, json=json_data, headers=headers)
             response.raise_for_status()
-            
-            # Converts Nomba's raw JSON response back into your structured Pydantic object
             return NombaVirtualAccountResponse.model_validate(response.json())
+
+
+
+
