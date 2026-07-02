@@ -52,3 +52,6 @@ class AppSettings(BaseSettings):
 
 # Initialize a single, reusable instance of your settings
 settings = AppSettings()
+
+
+
