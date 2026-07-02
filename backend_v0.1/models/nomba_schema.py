@@ -8,13 +8,14 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 # ─── PYDANTIC SCHEMAS ───
 class NombaVirtualAccountRequest(BaseModel):
-    # CRITICAL: Maps Python variables precisely to Nomba sub-account JSON expectations
-    account_name: str = Field(alias="accountName")
-    email: str
-    signing_bank: str = Field(default="WEMA", alias="signingBank")
-    account_ref: str = Field(alias="accountRef")  # FIX: Sub-account endpoint expects accountRef, NOT accountReference
-    currency: str = Field(default="NGN", alias="currency")  # FIXED: Explicit currency tracking enforced
-
+    # Matches the current Nomba virtual account docs:
+    # required: accountRef, accountName
+    # optional: bvn, expiryDate, expectedAmount
+    account_ref: str = Field(alias="accountRef", min_length=16, max_length=64)
+    account_name: str = Field(alias="accountName", min_length=8, max_length=64)
+    bvn: Optional[str] = Field(default=None, min_length=8, max_length=11)
+    expiry_date: Optional[str] = Field(default=None, alias="expiryDate")
+    expected_amount: Optional[float] = Field(default=None, alias="expectedAmount")
 
     model_config = {
         "populate_by_name": True

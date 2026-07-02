@@ -19,17 +19,16 @@ async def create_virtual_account(user_uuid: str, first_name: str, last_name: str
     middle_part = f" {middle_name} " if middle_name and middle_name.strip() else " "
     full_account_name = f"Monicare - {first_name.strip()}{middle_part}{last_name.strip()}"
     clean_name = full_account_name[:40].strip()
-    # Instantiate using correct Python field definitions matching the schema update above
+    # Nomba only expects the reference and display name for this flow.
     nomba_payload = NombaVirtualAccountRequest(
         account_name=clean_name,
-        email=email,
-        signing_bank="WEMA",
-        account_ref=tracking_reference  ,# FIX: Changed from account_reference to account_ref
-        currency="NGN"  # Fixed
-        )
+        account_ref=tracking_reference,
+    )
 
     # DEBUG TRACE: Print exactly what we send to Nomba to the logs
-    logger.info(f"OUTBOUND NOMBA JSON PAYLOAD: {json.dumps(nomba_payload.model_dump(by_alias=True))}")
+    logger.info(
+        f"OUTBOUND NOMBA JSON PAYLOAD: {json.dumps(nomba_payload.model_dump(by_alias=True, exclude_none=True))}"
+    )
     
     try:
         nomba_result = await nomba_client.create_user_virtual_account(nomba_payload)
