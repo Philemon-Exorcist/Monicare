@@ -1,4 +1,5 @@
 import { CopyIcon } from "./icons";
+import { useState, useEffect } from "react";
 
 export default function SummaryCards({ profile, isLoading, error }) {
   const walletBalance = profile?.wallet_balance ?? 0;
@@ -16,7 +17,7 @@ function AvailableBalanceCard({ balance, isLoading }) {
   const formattedBalance = new Intl.NumberFormat("en-NG", {
     style: "currency",
     currency: "NGN",
-    minimumFractionDigits: 100,
+    minimumFractionDigits: 0,
   }).format(balance);
 
   return (
@@ -49,6 +50,23 @@ function VirtualAccountCard({ profile, isLoading, error }) {
   const accountNumber = profile?.account_number || profile?.nomba_virtual_account || "000 000 0000";
   const bankName = profile?.bank_name || profile?.nomba_bank_name || "Bank name pending";
   const accountName = profile?.account_name || [profile?.first_name, profile?.last_name].filter(Boolean).join(" ") || "Account name pending";
+  const [isCopied, setIsCopied] = useState(false);
+
+  const handleCopy = () => {
+    if (isLoading || !accountNumber || accountNumber === "000 000 0000") return;
+    navigator.clipboard.writeText(accountNumber).then(() => {
+      setIsCopied(true);
+    });
+  };
+
+  useEffect(() => {
+    if (isCopied) {
+      const timer = setTimeout(() => {
+        setIsCopied(false);
+      }, 2000); // Reset after 2 seconds
+      return () => clearTimeout(timer);
+    }
+  }, [isCopied]);
 
   return (
     <div className="rounded-lg border border-neutral-300 bg-white p-7">
@@ -65,9 +83,13 @@ function VirtualAccountCard({ profile, isLoading, error }) {
 
       {error ? <p className="mt-3 text-sm text-red-600">{error}</p> : null}
 
-      <button className="mt-4 inline-flex h-9 w-full items-center justify-center gap-2 rounded-md bg-[#ffc400] px-4 text-sm font-black text-black transition hover:bg-[#ffd33d]">
+      <button
+        onClick={handleCopy}
+        disabled={isLoading || isCopied}
+        className="mt-4 inline-flex h-9 w-full items-center justify-center gap-2 rounded-md bg-[#ffc400] px-4 text-sm font-black text-black transition hover:bg-[#ffd33d] disabled:cursor-not-allowed disabled:opacity-70"
+      >
         <CopyIcon className="h-4 w-4" />
-        Copy Account
+        {isCopied ? "Copied!" : "Copy Account"}
       </button>
     </div>
   );
