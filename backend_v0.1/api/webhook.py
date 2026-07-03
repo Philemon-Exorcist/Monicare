@@ -14,10 +14,15 @@ logger = logging.getLogger("Monicare.webhooks")
 router = APIRouter(prefix="/api/monicare", tags=["Webhooks"])
 
 NOMBA_WEBHOOK_SECRET = getattr(settings, "NOMBA_WEBHOOK_SECRET", None)
-if not NOMBA_WEBHOOK_SECRET:
-    raise RuntimeError("NOMBA_WEBHOOK_SECRET must be defined in environment or .env")
 
-NOMBA_SECRET = bytes(NOMBA_WEBHOOK_SECRET, "utf-8")
+
+def _get_webhook_secret() -> bytes:
+    if not NOMBA_WEBHOOK_SECRET:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="NOMBA_WEBHOOK_SECRET is not configured.",
+        )
+    return bytes(NOMBA_WEBHOOK_SECRET, "utf-8")
 
 
 def _get_webhook_signature(
@@ -29,7 +34,8 @@ def _get_webhook_signature(
 
 
 def _verify_nomba_signature(raw_body: bytes, signature: str) -> None:
-    computed_signature = hmac.new(NOMBA_SECRET, raw_body, hashlib.sha256).hexdigest()
+    nomba_secret = _get_webhook_secret()
+    computed_signature = hmac.new(nomba_secret, raw_body, hashlib.sha256).hexdigest()
     if not hmac.compare_digest(computed_signature, signature):
         logger.warning("Webhook signature mismatch. expected=%s incoming=%s", computed_signature, signature)
         raise HTTPException(
