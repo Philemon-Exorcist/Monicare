@@ -38,12 +38,18 @@ function humanizeValidationError(detail) {
   return "Please check the form fields and try again.";
 }
 
-async function request(path, method = "POST", body = {}) {
+async function request(path, method = "POST", body = {}, token) {
+  const headers = {
+    "Content-Type": "application/json",
+  };
+
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
   const response = await fetch(`${BASE_URL}${path}`, {
     method,
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers,
     body: method === "GET" ? undefined : JSON.stringify(body),
   });
 
@@ -75,4 +81,8 @@ export function signup(payload) {
 export function submitAuth(payload, mode) {
   const endpoint = mode === "signup" ? "/api/v1/signup" : "/api/v1/login";
   return request(endpoint, "POST", payload);
+}
+
+export function getDashboardProfile(token) {
+  return request("/api/v1/dashboard", "GET", {}, token);
 }

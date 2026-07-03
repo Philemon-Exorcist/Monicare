@@ -1,10 +1,10 @@
 import { CopyIcon } from "./icons";
 
-export default function SummaryCards() {
+export default function SummaryCards({ profile, isLoading, error }) {
   return (
     <section className="mt-7 grid gap-4 lg:grid-cols-2">
       <LiquidityCard />
-      <VirtualAccountCard />
+      <VirtualAccountCard profile={profile} isLoading={isLoading} error={error} />
     </section>
   );
 }
@@ -24,7 +24,11 @@ function LiquidityCard() {
   );
 }
 
-function VirtualAccountCard() {
+function VirtualAccountCard({ profile, isLoading, error }) {
+  const accountNumber = profile?.account_number || profile?.nomba_virtual_account || "Not available yet";
+  const bankName = profile?.bank_name || profile?.nomba_bank_name || "Bank name pending";
+  const accountName = profile?.account_name || [profile?.first_name, profile?.last_name].filter(Boolean).join(" ") || "Account name pending";
+
   return (
     <div className="rounded-lg border border-neutral-300 bg-white p-7">
       <p className="font-mono text-[10px] uppercase tracking-[0.35em] text-indigo-700">
@@ -33,10 +37,12 @@ function VirtualAccountCard() {
       <p className="mt-1 text-xs text-neutral-500">Deposit directly to fund your wallet.</p>
 
       <div className="mt-5 rounded-lg bg-neutral-50 p-5">
-        <p className="text-xs text-neutral-500">Providus Bank</p>
-        <p className="mt-2 font-mono text-2xl font-black tracking-[0.16em]">1029 3847 56</p>
-        <p className="mt-2 text-xs text-neutral-500">Nomba Virtual Funding Account</p>
+        <p className="text-xs text-neutral-500">{bankName}</p>
+        <p className="mt-2 font-mono text-2xl font-black tracking-[0.16em]">{isLoading ? "Loading..." : accountNumber}</p>
+        <p className="mt-2 text-xs text-neutral-500">{accountName}</p>
       </div>
+
+      {error ? <p className="mt-3 text-sm text-red-600">{error}</p> : null}
 
       <button className="mt-4 inline-flex h-9 w-full items-center justify-center gap-2 rounded-md bg-[#ffc400] px-4 text-sm font-black text-black transition hover:bg-[#ffd33d]">
         <CopyIcon className="h-4 w-4" />
