@@ -8,6 +8,7 @@ import os
 import uvicorn
 from fastapi.middleware.cors import CORSMiddleware
 from pages.register import router
+from core.create_savings_group import group_router
 
 
 
@@ -24,6 +25,7 @@ logger = logging.getLogger("KamaraLogger")
 app = FastAPI(title="Monicare")
 
 app.include_router(router)
+app.include_router(group_router)
 
 app.add_middleware(
     CORSMiddleware,
@@ -141,5 +143,4 @@ if __name__ == "__main__":
 
     print(f"Booting server on port {port} | Production Mode: {is_cloud_run or is_render}")
     uvicorn.run("main:app", host="0.0.0.0", port=port, reload=reload_setting)
-
 
