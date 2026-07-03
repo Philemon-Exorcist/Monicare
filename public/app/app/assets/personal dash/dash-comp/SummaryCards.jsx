@@ -1,11 +1,32 @@
 import { CopyIcon } from "./icons";
 
 export default function SummaryCards({ profile, isLoading, error }) {
+  const walletBalance = profile?.wallet_balance ?? 0;
+
   return (
-    <section className="mt-7 grid gap-4 lg:grid-cols-2">
+    <section className="mt-7 grid gap-4 lg:grid-cols-3">
+      <AvailableBalanceCard balance={walletBalance} isLoading={isLoading} />
       <LiquidityCard />
       <VirtualAccountCard profile={profile} isLoading={isLoading} error={error} />
     </section>
+  );
+}
+
+function AvailableBalanceCard({ balance, isLoading }) {
+  const formattedBalance = new Intl.NumberFormat("en-NG", {
+    style: "currency",
+    currency: "NGN",
+    minimumFractionDigits: 0,
+  }).format(balance);
+
+  return (
+    <div className="rounded-lg bg-indigo-700 p-7 text-white">
+      <p className="font-mono text-[10px] uppercase tracking-[0.35em] text-indigo-200">Available Balance</p>
+      <div className="mt-5 text-4xl font-black tracking-tight sm:text-5xl">
+        {isLoading ? "Loading..." : formattedBalance}
+      </div>
+      <p className="mt-9 text-xs text-indigo-200">This is your personal wallet balance for contributions.</p>
+    </div>
   );
 }
 
@@ -25,7 +46,7 @@ function LiquidityCard() {
 }
 
 function VirtualAccountCard({ profile, isLoading, error }) {
-  const accountNumber = profile?.account_number || profile?.nomba_virtual_account || "Not available yet";
+  const accountNumber = profile?.account_number || profile?.nomba_virtual_account || "000 000 0000";
   const bankName = profile?.bank_name || profile?.nomba_bank_name || "Bank name pending";
   const accountName = profile?.account_name || [profile?.first_name, profile?.last_name].filter(Boolean).join(" ") || "Account name pending";
 

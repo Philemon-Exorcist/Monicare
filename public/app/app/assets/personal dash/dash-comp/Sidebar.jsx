@@ -56,11 +56,11 @@ function NavButton({ label, icon: Icon, active = false, compact = false, onClick
     <button
       type="button"
       onClick={onClick}
-      className={`flex h-12 shrink-0 items-center gap-4 rounded-xl px-4 text-left text-base font-semibold transition ${
+      className={`flex h-10 shrink-0 items-center gap-3 rounded-lg px-3 text-left text-sm font-semibold transition ${
         active ? "bg-[#070707] text-white" : "text-neutral-500 hover:bg-neutral-100 hover:text-black"
       } ${compact ? "lg:px-0 lg:hover:bg-transparent" : ""}`}
     >
-      <Icon className="h-5 w-5 shrink-0" />
+      <Icon className="h-4 w-4 shrink-0" />
       <span className="whitespace-nowrap">{label}</span>
     </button>
   );
