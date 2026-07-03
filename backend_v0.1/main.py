@@ -9,6 +9,7 @@ import uvicorn
 from fastapi.middleware.cors import CORSMiddleware
 from pages.register import router
 from core.create_savings_group import group_router
+from pages.home import home_router
 
 
 
@@ -26,6 +27,7 @@ app = FastAPI(title="Monicare")
 
 app.include_router(router)
 app.include_router(group_router)
+app.include_router(home_router)
 
 app.add_middleware(
     CORSMiddleware,
