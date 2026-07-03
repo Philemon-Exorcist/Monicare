@@ -16,7 +16,7 @@ function AvailableBalanceCard({ balance, isLoading }) {
   const formattedBalance = new Intl.NumberFormat("en-NG", {
     style: "currency",
     currency: "NGN",
-    minimumFractionDigits: 0,
+    minimumFractionDigits: 100,
   }).format(balance);
 
   return (
