@@ -21,6 +21,8 @@ export default function AuthPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showRepeatPassword, setShowRepeatPassword] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -340,6 +342,21 @@ export default function AuthPage() {
                   placeholder="Password"
                   className="w-full rounded-full bg-slate-800 px-3 sm:px-4 py-2 sm:py-2.5 text-sm text-white placeholder:text-slate-500 outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-opacity-50 transition"
                 />
+                <label htmlFor="password" className="block text-xs sm:text-sm font-medium text-slate-400 mb-1 ml-2 sm:ml-4">
+                  Password
+                </label>
+                <div className="relative">
+                  <input
+                    id="password"
+                    required
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Password"
+                    className="w-full rounded-full bg-slate-800 px-3 sm:px-4 py-2 sm:py-2.5 pr-10 text-sm text-white placeholder:text-slate-500 outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-opacity-50 transition"
+                  />
+                  <PasswordToggle isVisible={showPassword} onToggle={() => setShowPassword(!showPassword)} />
+                </div>
               </div>
 
               {mode === "signup" && (
@@ -354,6 +371,24 @@ export default function AuthPage() {
                     placeholder="Confirm Password"
                     className="w-full rounded-full bg-slate-800 px-3 sm:px-4 py-2 sm:py-2.5 text-sm text-white placeholder:text-slate-500 outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-opacity-50 transition"
                   />
+                  <label htmlFor="repeatPassword" className="block text-xs sm:text-sm font-medium text-slate-400 mb-1 ml-2 sm:ml-4">
+                    Confirm Password
+                  </label>
+                  <div className="relative">
+                    <input
+                      id="repeatPassword"
+                      required
+                      type={showRepeatPassword ? "text" : "password"}
+                      value={repeatPassword}
+                      onChange={(e) => setRepeatPassword(e.target.value)}
+                      placeholder="Confirm Password"
+                      className="w-full rounded-full bg-slate-800 px-3 sm:px-4 py-2 sm:py-2.5 pr-10 text-sm text-white placeholder:text-slate-500 outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-opacity-50 transition"
+                    />
+                    <PasswordToggle
+                      isVisible={showRepeatPassword}
+                      onToggle={() => setShowRepeatPassword(!showRepeatPassword)}
+                    />
+                  </div>
                 </div>
               )}
 
@@ -375,5 +410,35 @@ export default function AuthPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+function PasswordToggle({ isVisible, onToggle }) {
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      className="absolute inset-y-0 right-0 flex items-center px-3 text-slate-400 hover:text-white"
+      aria-label={isVisible ? "Hide password" : "Show password"}
+    >
+      {isVisible ? <EyeOffIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
+    </button>
+  );
+}
+
+function EyeIcon(props) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639l4.43-4.43a1.012 1.012 0 0 1 1.431 0l4.43 4.43a1.012 1.012 0 0 1 0 .639l-4.43 4.43a1.012 1.012 0 0 1-1.431 0l-4.43-4.43Z" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+    </svg>
+  );
+}
+
+function EyeOffIcon(props) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.243 4.243L6.228 6.228" />
+    </svg>
   );
 }

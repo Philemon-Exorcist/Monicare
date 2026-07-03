@@ -68,7 +68,7 @@ export default function MyDash() {
             isSidebarOpen ? "translate-x-0" : "-translate-x-full"
           }`}
         >
-          <Sidebar />
+          <Sidebar profile={profile} isLoading={isLoadingProfile} />
           <button
             onClick={() => setIsSidebarOpen(false)}
             className="absolute top-4 right-4 text-white"
@@ -82,7 +82,7 @@ export default function MyDash() {
 
         {/* Sidebar for desktop (static) */}
         <div className="hidden lg:block lg:h-full lg:flex-shrink-0 lg:overflow-y-auto">
-          <Sidebar />
+          <Sidebar profile={profile} isLoading={isLoadingProfile} />
         </div>
         <main className="flex-1 overflow-y-auto px-4 py-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
