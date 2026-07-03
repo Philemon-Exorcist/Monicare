@@ -1,227 +1,154 @@
-import hmac
+﻿import hmac
 import hashlib
 import logging
-from fastapi import APIRouter, Request, Header, HTTPException, status
-from models.nomba_schema import settings
-from models.webhook_schema import NombaWebhookPayload
-from app.supabase_client import get_supabase_admin
+import re
 
-logger = logging.getLogger("Monicare.webhooks")
-router = APIRouter(prefix="/api/monicare/", tags=["Webhooks"])
-
-# Ensure your secret is encoded as bytes for HMAC encryption
-NOMBA_SECRET = bytes(settings.nomba_webhook_secret, "utf-8")
-
-@router.post("/webhook", status_code=status.HTTP_200_OK)
-async def receive_nomba_payment_notification(
-    request: Request, 
-    x_nomba_signature: str = Header(None) # Nomba passes its cryptographic signature here
-):
-    # ─── SECURITY BLOCK 1: CRYPTOGRAPHIC HANDSHAKE SIGNATURE CHECKS ───
-    if not x_nomba_signature:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Missing signature header.")
-
-    raw_body = await request.body()
-    
-    # Compute the expected hash using Python's native hmac and hashlib
-    computed_signature = hmac.new(NOMBA_SECRET, raw_body, hashlib.sha256).hexdigest()
-    
-    # Enforce secure timing-attack resistant comparison
-    if not hmac.compare_digest(computed_signature, x_nomba_signature):
-        logger.warning("Hacking attempt blocked: Webhook signature mismatch.")
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid verification source.")
-
-    # ─── PAYLOAD DECODING LAYER ───
-    payload = await request.json()
-    
-    # Skip early if it's a test event or a different event trigger
-    if payload.get("event") != "virtual_account.payment_received":
-        return {"status": "ignored", "message": "Event type not processed by wallet engine."}
-
-    # Validate structural payload criteria against Pydantic schema
-    validated_payload = NombaWebhookPayload.model_validate(payload)
-    payment_info = validated_payload.data
-    
-    # Extract structural references
-    network_ref = payment_info.order_reference
-    tracking_tag = payment_info.account_reference # e.g., "USER_REF_uuid"
-    amount_deposited = payment_info.amount
-
-    # Extract user's internal Supabase UUID straight from our tracking tag
-    user_uuid = tracking_tag.replace("USER_REF_", "")
-
-    # ─── SECURITY BLOCK 2: THE IDEMPOTENCY ID REPEAT GUARD ───
-    # Spin up our clean administrative thread to interact with RLS-protected tables
-    supabase_admin = get_supabase_admin()
-    
-    existing_txn = supabase_admin.table("wallet_transactions")\
-        .select("id").eq("nomba_transaction_ref", network_ref).execute()
-        
-    if existing_txn.data:
-        # We already processed this payment receipt! Exit cleanly so we don't double-credit
-        return {"status": "duplicate", "message": "Transaction receipt already fully settled."}
-
-    # ─── STEP 3: EXECUTE TRANSACTION AND BALANCES UPDATE ───
-    try:
-        # A. Fetch current user balance ledger
-        user_profile = supabase_admin.table("profiles").select("wallet_balance").eq("id", user_uuid).single().execute()
-        current_balance = float(user_profile.data["wallet_balance"])
-        
-        # Calculate new total wallet balance
-        new_balance = current_balance + amount_deposited
-
-        # B. Push clean mathematical update directly to Supabase profiles
-        supabase_admin.table("profiles").update({"wallet_balance": new_balance}).eq("id", user_uuid).execute()
-
-        # C. Burn an unchangeable transaction receipt item row into the history logs
-        supabase_admin.table("wallet_transactions").insert({
-            "user_id": user_uuid,
-            "amount": amount_deposited,
-            "type": "TOPUP",
-            "status": "SUCCESS",
-            "nomba_transaction_ref": network_ref
-        }).execute()
-
-        logger.info(f"Wallet deposit success: User {user_uuid} credited ₦{amount_deposited}")
-        return {"status": "success", "message": "Wallet ledger balance updated successfully."}
-
-    except Exception as db_err:
-        logger.critical(f"Critical database transaction save write error: {db_err}")
-        # Log it as failed inside your transaction tables so you don't lose track of it
-        try:
-            supabase_admin.table("wallet_transactions").insert({
-                "user_id": user_uuid,
-                "amount": amount_deposited,
-                "type": "TOPUP",
-                "status": "FAILED",
-                "nomba_transaction_ref": network_ref
-            }).execute()
-        except:
-            pass
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal ledger sync crash.")
-
-
-
-
-
-
-
-
-import hmac
-import hashlib
-import logging
 from fastapi import APIRouter, Request, Header, HTTPException, status, BackgroundTasks
+from pydantic import ValidationError
+
+from app.supabase_client import get_supabase_admin
 from models.nomba_schema import settings
 from models.webhook_schema import NombaWebhookPayload
-from app.supabase_client import get_supabase_admin
 
 logger = logging.getLogger("Monicare.webhooks")
 router = APIRouter(prefix="/api/monicare", tags=["Webhooks"])
 
-# Encode secret safely from environment options
-NOMBA_SECRET = bytes(settings.NOMBA_WEBHOOK_SECRET, "utf-8")
+NOMBA_WEBHOOK_SECRET = getattr(settings, "NOMBA_WEBHOOK_SECRET", None)
+if not NOMBA_WEBHOOK_SECRET:
+    raise RuntimeError("NOMBA_WEBHOOK_SECRET must be defined in environment or .env")
+
+NOMBA_SECRET = bytes(NOMBA_WEBHOOK_SECRET, "utf-8")
 
 
-async def process_wallet_ledger_update(user_uuid: str, amount_deposited: float, network_ref: str):
-    """
-    Asynchronous worker that safely performs database operations
-    outside Nomba's critical timeout window.
-    """
+def _get_webhook_signature(
+    nomba_signature: str | None,
+    x_nomba_signature: str | None,
+    x_signature: str | None,
+) -> str | None:
+    return nomba_signature or x_nomba_signature or x_signature
+
+
+def _verify_nomba_signature(raw_body: bytes, signature: str) -> None:
+    computed_signature = hmac.new(NOMBA_SECRET, raw_body, hashlib.sha256).hexdigest()
+    if not hmac.compare_digest(computed_signature, signature):
+        logger.warning("Webhook signature mismatch. expected=%s incoming=%s", computed_signature, signature)
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid webhook signature.",
+        )
+
+
+def _extract_user_uuid(account_reference: str) -> str:
+    if not isinstance(account_reference, str):
+        raise ValueError("Account reference must be a string.")
+
+    match = re.match(r"^USER_REF_([0-9a-fA-F-]{36})$", account_reference)
+    if not match:
+        raise ValueError("Invalid account reference format.")
+
+    return match.group(1)
+
+
+async def _process_payment_event(user_uuid: str, amount: float, network_ref: str) -> None:
     supabase_admin = get_supabase_admin()
-    
-    # Idempotency checks to prevent double crediting
-    existing_txn = supabase_admin.table("wallet_transactions")\
-        .select("id").eq("nomba_transaction_ref", network_ref).execute()
-        
+
+    existing_txn = (
+        supabase_admin.table("wallet_transactions")
+        .select("id")
+        .eq("nomba_transaction_ref", network_ref)
+        .execute()
+    )
+
     if existing_txn.data:
-        logger.info(f"Duplicate transaction ignored: {network_ref}")
+        logger.info("Duplicate webhook transaction ignored: %s", network_ref)
         return
 
-    try:
-        # A. Pull existing balance fields safely
-        user_profile = supabase_admin.table("profiles").select("wallet_balance").eq("id", user_uuid).single().execute()
-        current_balance = float(user_profile.data.get("wallet_balance", 0.0))
-        
-        new_balance = current_balance + amount_deposited
+    profile_response = (
+        supabase_admin.table("profiles")
+        .select("wallet_balance")
+        .eq("id", user_uuid)
+        .single()
+        .execute()
+    )
 
-        # B. Atomically apply financial updates
-        supabase_admin.table("profiles").update({"wallet_balance": new_balance}).eq("id", user_uuid).execute()
-
-        # C. Write transactional ledger row
-        supabase_admin.table("wallet_transactions").insert({
-            "user_id": user_uuid,
-            "amount": amount_deposited,
-            "type": "TOPUP",
-            "status": "SUCCESS",
-            "nomba_transaction_ref": network_ref
-        }).execute()
-
-        logger.info(f"Successfully processed deposit: User {user_uuid} credited ₦{amount_deposited}")
-
-    except Exception as db_err:
-        logger.critical(f"Critical database transaction save write error: {db_err}")
+    if not profile_response.data:
+        logger.error("Webhook user profile not found: %s", user_uuid)
         try:
             supabase_admin.table("wallet_transactions").insert({
                 "user_id": user_uuid,
-                "amount": amount_deposited,
+                "amount": amount,
                 "type": "TOPUP",
                 "status": "FAILED",
-                "nomba_transaction_ref": network_ref
+                "nomba_transaction_ref": network_ref,
             }).execute()
-        except:
+        except Exception:
             pass
+        return
+
+    current_balance = float(profile_response.data.get("wallet_balance", 0.0) or 0.0)
+    new_balance = current_balance + amount
+
+    supabase_admin.table("profiles").update({"wallet_balance": new_balance}).eq("id", user_uuid).execute()
+
+    supabase_admin.table("wallet_transactions").insert({
+        "user_id": user_uuid,
+        "amount": amount,
+        "type": "TOPUP",
+        "status": "SUCCESS",
+        "nomba_transaction_ref": network_ref,
+    }).execute()
+
+    logger.info("Processed webhook payment: user=%s amount=%s ref=%s", user_uuid, amount, network_ref)
 
 
 @router.post("/webhook", status_code=status.HTTP_200_OK)
 async def receive_nomba_payment_notification(
-    request: Request, 
+    request: Request,
     background_tasks: BackgroundTasks,
-    nomba_signature: str = Header(None, alias="nomba-signature")  # FIX: Correct official header target key
+    nomba_signature: str | None = Header(None, alias="nomba-signature"),
+    x_nomba_signature: str | None = Header(None, alias="x-nomba-signature"),
+    x_signature: str | None = Header(None, alias="x-signature"),
 ):
-    # ─── SECURITY BLOCK 1: CRYPTOGRAPHIC HANDSHAKE ───
-    if not nomba_signature:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Missing signature header.")
-
     raw_body = await request.body()
-    
-    # Compute the expected hash using Python's native hmac and hashlib
-    computed_signature = hmac.new(NOMBA_SECRET, raw_body, hashlib.sha256).hexdigest()
-    
-    # Enforce secure timing-attack resistant comparison
-    if not hmac.compare_digest(computed_signature, nomba_signature):
-        logger.warning("Hacking attempt blocked: Webhook signature mismatch.")
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid verification source.")
+    signature = _get_webhook_signature(nomba_signature, x_nomba_signature, x_signature)
 
-    # ─── PAYLOAD DECODING LAYER ───
-    payload = await request.json()
-    
-    # Skip early if it's a test event or a different event trigger
-    if payload.get("event") != "virtual_account.payment_received":
-        return {"status": "ignored", "message": "Event type not processed by wallet engine."}
-
-    try:
-        # Validate structural payload criteria against Pydantic schema
-        validated_payload = NombaWebhookPayload.model_validate(payload)
-        payment_info = validated_payload.data
-        
-        network_ref = payment_info.order_reference
-        tracking_tag = payment_info.account_reference 
-        amount_deposited = float(payment_info.amount)
-
-        # Extract user's internal Supabase UUID straight from our tracking tag
-        user_uuid = tracking_tag.replace("USER_REF_", "")
-
-        # FIX 2: Offload long running database sync calls straight to BackgroundTasks
-        background_tasks.add_task(
-            process_wallet_ledger_update,
-            user_uuid=user_uuid,
-            amount_deposited=amount_deposited,
-            network_ref=network_ref
+    if not signature:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Missing webhook signature header.",
         )
 
-        # Return an immediate 200 OK acknowledgment response to halt Nomba's retry engines
-        return {"status": "acknowledged", "message": "Webhook received successfully."}
+    _verify_nomba_signature(raw_body, signature)
 
-    except Exception as parse_err:
-        logger.error(f"Failed parsing incoming payload schema structure: {parse_err}")
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Malformed payload layout.")
+    try:
+        payload = await request.json()
+    except ValueError as exc:
+        logger.error("Invalid webhook JSON body: %s", exc)
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid webhook JSON payload.")
+
+    if payload.get("event") != "virtual_account.payment_received":
+        logger.info("Ignoring unsupported webhook event type: %s", payload.get("event"))
+        return {"status": "ignored", "message": "Event type not processed."}
+
+    try:
+        validated_payload = NombaWebhookPayload.model_validate(payload)
+    except ValidationError as exc:
+        logger.error("Webhook schema validation failed: %s", exc)
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Malformed webhook payload.")
+
+    payment_info = validated_payload.data
+
+    try:
+        user_uuid = _extract_user_uuid(payment_info.account_reference)
+    except ValueError as exc:
+        logger.error("Invalid account reference: %s", exc)
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
+
+    background_tasks.add_task(
+        _process_payment_event,
+        user_uuid=user_uuid,
+        amount=float(payment_info.amount),
+        network_ref=payment_info.order_reference,
+    )
+
+    return {"status": "acknowledged", "message": "Webhook received."}

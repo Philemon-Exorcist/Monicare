@@ -1,27 +1,23 @@
 from pydantic import BaseModel, Field
 
-class NombaPaymentData(BaseModel):
-    amount: float
-    order_reference: str = Field(alias="orderReference")
-    account_reference: str = Field(alias="accountReference") # Contains 'USER_REF_uuid'
-    status: str
-
-class NombaWebhookPayload(BaseModel):
-    event: str # e.g., "virtual_account.payment_received"
-    message: str
-    data: NombaPaymentData
-
-
-
 
 class NombaPaymentData(BaseModel):
     amount: float
     order_reference: str = Field(alias="orderReference")
-    account_reference: str = Field(alias="accountReference") # Contains 'USER_REF_uuid'
+    account_reference: str = Field(alias="accountReference")
     status: str
 
+    model_config = {
+        "populate_by_name": True,
+    }
+
+
 class NombaWebhookPayload(BaseModel):
-    event: str # e.g., "virtual_account.payment_received"
+    event: str
     message: str
     data: NombaPaymentData
+
+    model_config = {
+        "populate_by_name": True,
+    }
  

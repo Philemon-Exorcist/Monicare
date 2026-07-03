@@ -1,0 +1,1 @@
+# helps user to join a group via a the group link

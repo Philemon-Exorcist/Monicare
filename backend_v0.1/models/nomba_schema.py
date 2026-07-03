@@ -41,6 +41,7 @@ class AppSettings(BaseSettings):
     NOMBA_LIVE_PRIVATE_KEY: str = Field(alias="NOMBA_LIVE_PRIVATE_KEY")
     Main_Account_ID: str
     NOMBA_SUB_ACCOUNT_ID: str  # Mandatory for sub-account-scoped creation
+    NOMBA_WEBHOOK_SECRET: str
 
     model_config = SettingsConfigDict(
         env_file=".env",
