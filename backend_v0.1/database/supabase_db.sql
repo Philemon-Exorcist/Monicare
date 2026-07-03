@@ -62,7 +62,8 @@ CREATE TABLE savings_groups (
     current_cycle_round INT DEFAULT 1 NOT NULL,
     
     -- All hackathon savings circles point to your single active Sub-Account ID vault
-    nomba_sub_account_id TEXT NOT NULL, 
+    nomba_sub_account_id TEXT NOT NULL,
+    group_link TEXT UNIQUE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 

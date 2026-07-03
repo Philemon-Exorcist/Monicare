@@ -5,12 +5,13 @@ from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.auth import verify_user_token
 from app.supabase_client import get_supabase_admin
+from core.generate_group_link import generate_group_link
 from models.group_saving_schema import SavingsGroupCreate
 from models.nomba_schema import settings
 
 logger = logging.getLogger("Monicare.group_saving")
 
-group_router = APIRouter(prefix="/api/v1/group_saving", tags=["Group Saving"])
+group_router = APIRouter(prefix="/api/v1", tags=["Group Saving"])
 
 
 @group_router.post("/create_savings_group", status_code=status.HTTP_201_CREATED)
@@ -79,6 +80,16 @@ async def create_savings_group(
                 detail="Group id was not returned after creation.",
             )
 
+        group_link = generate_group_link(str(group_id))
+        try:
+            supabase_admin.table("savings_groups").update({"group_link": group_link}).eq("id", group_id).execute()
+        except Exception as err:
+            logger.error("Failed to persist group link for %s: %s", group_id, err, exc_info=True)
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Unable to save group invite link.",
+            )
+
         supabase_admin.table("group_members").insert({
             "group_id": group_id,
             "user_id": str(creator_uuid),
@@ -99,6 +110,7 @@ async def create_savings_group(
                 "nomba_sub_account_id": created_group.get("nomba_sub_account_id"),
                 "creator_id": created_group.get("creator_id"),
                 "created_at": created_group.get("created_at"),
+                "group_link": group_link,
             },
         }
 

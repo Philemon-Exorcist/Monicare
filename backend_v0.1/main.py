@@ -5,6 +5,8 @@ from fastapi.responses import JSONResponse
 import logging
 import time
 import os
+import asyncio
+import httpx
 import uvicorn
 from fastapi.middleware.cors import CORSMiddleware
 from pages.register import router
@@ -25,6 +27,11 @@ logger = logging.getLogger("KamaraLogger")
 
 app = FastAPI(title="Monicare")
 
+KEEP_ALIVE_URL = os.environ.get("KEEP_ALIVE_URL", "https://monicare.onrender.com/health")
+KEEP_ALIVE_INTERVAL_SECONDS = int(os.environ.get("KEEP_ALIVE_INTERVAL_SECONDS", 600))
+ENABLE_KEEP_ALIVE = os.environ.get("ENABLE_KEEP_ALIVE", "true").lower() in ("1", "true", "yes")
+app.state.keepalive_task = None
+
 app.include_router(router)
 app.include_router(group_router)
 app.include_router(home_router)
@@ -36,6 +43,31 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"]
 )
+
+
+async def keep_alive_loop() -> None:
+    async with httpx.AsyncClient(timeout=10.0) as client:
+        while True:
+            try:
+                response = await client.get(KEEP_ALIVE_URL)
+                logger.info("Keepalive ping %s -> %s", KEEP_ALIVE_URL, response.status_code)
+            except Exception as err:
+                logger.warning("Keepalive ping failed: %s", err)
+            await asyncio.sleep(KEEP_ALIVE_INTERVAL_SECONDS)
+
+
+@app.on_event("startup")
+async def on_startup() -> None:
+    if ENABLE_KEEP_ALIVE:
+        logger.info("Keepalive enabled. Pinging %s every %s seconds.", KEEP_ALIVE_URL, KEEP_ALIVE_INTERVAL_SECONDS)
+        app.state.keepalive_task = asyncio.create_task(keep_alive_loop())
+
+
+@app.on_event("shutdown")
+async def on_shutdown() -> None:
+    task = getattr(app.state, "keepalive_task", None)
+    if task is not None:
+        task.cancel()
 
 
 @app.exception_handler(RequestValidationError)

@@ -62,7 +62,7 @@ async def get_savings_groups(current_user=Depends(verify_user_token)):
         groups_response = (
             supabase_admin.table("savings_groups")
             .select(
-                "id,title,contribution_amount,cycle_period,max_slots,status,current_cycle_round,nomba_sub_account_id,creator_id,created_at"
+                "id,title,contribution_amount,cycle_period,max_slots,status,current_cycle_round,nomba_sub_account_id,creator_id,group_link,created_at"
             )
             .in_("id", group_ids)
             .execute()
