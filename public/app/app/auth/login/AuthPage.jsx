@@ -332,16 +332,6 @@ export default function AuthPage() {
               )}
 
               <div>
-                <label htmlFor="password" className="block text-xs sm:text-sm font-medium text-slate-400 mb-1 ml-2 sm:ml-4">Password</label>
-                <input
-                  id="password"
-                  required
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Password"
-                  className="w-full rounded-full bg-slate-800 px-3 sm:px-4 py-2 sm:py-2.5 text-sm text-white placeholder:text-slate-500 outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-opacity-50 transition"
-                />
                 <label htmlFor="password" className="block text-xs sm:text-sm font-medium text-slate-400 mb-1 ml-2 sm:ml-4">
                   Password
                 </label>
@@ -361,16 +351,6 @@ export default function AuthPage() {
 
               {mode === "signup" && (
                 <div className="sm:col-span-2">
-                  <label htmlFor="repeatPassword" className="block text-xs sm:text-sm font-medium text-slate-400 mb-1 ml-2 sm:ml-4">Confirm Password</label>
-                  <input
-                    id="repeatPassword"
-                    required
-                    type="password"
-                    value={repeatPassword}
-                    onChange={(e) => setRepeatPassword(e.target.value)}
-                    placeholder="Confirm Password"
-                    className="w-full rounded-full bg-slate-800 px-3 sm:px-4 py-2 sm:py-2.5 text-sm text-white placeholder:text-slate-500 outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-opacity-50 transition"
-                  />
                   <label htmlFor="repeatPassword" className="block text-xs sm:text-sm font-medium text-slate-400 mb-1 ml-2 sm:ml-4">
                     Confirm Password
                   </label>
