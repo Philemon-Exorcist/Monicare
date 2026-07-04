@@ -132,7 +132,8 @@ async def receive_nomba_payment_notification(
         logger.error("Invalid webhook JSON body: %s", exc)
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid webhook JSON payload.")
 
-    if payload.get("event") != "virtual_account.payment_received":
+    event_type = str(payload.get("event", "")).lower()
+    if event_type != "payment_success":
         logger.info("Ignoring unsupported webhook event type: %s", payload.get("event"))
         return {"status": "ignored", "message": "Event type not processed."}
 

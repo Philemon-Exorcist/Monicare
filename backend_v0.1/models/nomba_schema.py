@@ -34,6 +34,18 @@ class NombaVirtualAccountResponse(BaseModel):
     }
 
 
+class NombaTransferRequest(BaseModel):
+    payout_ref: str = Field(alias="payoutRef")
+    amount: float = Field(alias="amount")
+    currency: str = Field(default="NGN", alias="currency")
+    bank_code: str = Field(alias="bankCode")  # Standard CBN 3-digit bank code (e.g., "057" for Access Bank)
+    account_number: str = Field(alias="accountNumber") # 10-digit NUBAN
+    narration: str = Field(default="Monicare Group Payout", alias="narration")
+
+    model_config = {"populate_by_name": True}
+
+
+
 class AppSettings(BaseSettings):
     NOMBA_BASE_URL: str
     NOMBA_SANDBOX_URL: str

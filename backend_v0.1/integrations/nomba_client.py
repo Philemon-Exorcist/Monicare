@@ -1,6 +1,6 @@
 
 import httpx
-from models.nomba_schema import settings
+from models.nomba_schema import NombaTransferRequest, settings
 from models.nomba_schema import NombaVirtualAccountRequest, NombaVirtualAccountResponse
 import time
 import os
@@ -90,5 +90,32 @@ class NombaAPIClient:
             except httpx.HTTPStatusError as http_err:
                 logger.error(f"Nomba HTTP Layer Error: {http_err.response.text}")
                 raise Exception(f"Nomba Network Error: {http_err.response.text}")
+            
+    async def execute_external_bank_payout(self, request_payload: NombaTransferRequest) -> dict:
+        """Sends an outbound bank transfer request using your Nomba master auth keys"""
+        token = await self._get_oauth_token()
+        url = f"{self.base_url}/v1/transfers/bank"
+        
+        headers = {
+            "Authorization": f"Bearer {token}",
+            "accountId": self.parent_account_id,
+            "Content-Type": "application/json"
+        }
+        
+        json_data = request_payload.model_dump(by_alias=True)
+        
+        async with httpx.AsyncClient() as client:
+            try:
+                response = await client.post(url, json=json_data, headers=headers)
+                response.raise_for_status()
+                res_payload = response.json()
+                
+                # Nomba returns "00" or success strings if the switch accepts the transfer payload
+                if res_payload.get("code") not in ["00", "02"]: 
+                    raise Exception(f"Nomba Bank Switch Rejection: {res_payload.get('description')}")
+                    
+                return res_payload
+            except httpx.HTTPStatusError as http_err:
+                raise Exception(f"Nomba Network Transfer Error: {http_err.response.text}")
 
 

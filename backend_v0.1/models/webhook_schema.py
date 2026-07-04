@@ -4,7 +4,7 @@ from pydantic import BaseModel, Field
 class NombaPaymentData(BaseModel):
     amount: float
     order_reference: str = Field(alias="orderReference")
-    account_reference: str = Field(alias="accountReference")
+    account_reference: str = Field(alias="accountRef")
     status: str
 
     model_config = {

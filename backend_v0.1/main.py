@@ -13,6 +13,7 @@ from pages.register import router
 from core.create_savings_group import group_router
 from core.activate_group import activate_groups_by_max_slots
 from pages.home import home_router
+from api.webhook import router as webhook_router
 
 
 
@@ -39,6 +40,7 @@ app.state.auto_activate_task = None
 app.include_router(router)
 app.include_router(group_router)
 app.include_router(home_router)
+app.include_router(webhook_router)
 
 app.add_middleware(
     CORSMiddleware,
