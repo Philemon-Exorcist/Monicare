@@ -1,14 +1,14 @@
-import { ChatIcon, GridIcon, SettingsIcon, StoreIcon, UsersIcon, LogoutIcon } from "./icons";
+﻿import { ChatIcon, GridIcon, SettingsIcon, StoreIcon, UsersIcon, LogoutIcon } from "./icons";
 
 export const navItems = [
-  { label: "Personal Dashboard", icon: GridIcon, active: true },
-  { label: "My Savings Circles", icon: UsersIcon },
-  { label: "Marketplace Overview", icon: StoreIcon },
-  { label: "Help & Community Hub", icon: ChatIcon },
+  { label: "Personal Dashboard", icon: GridIcon, href: "/assets/personal%20dash" },
+  { label: "My Savings Circles", icon: UsersIcon, href: "/assets/personal%20dash/my-circle" },
+  { label: "Marketplace Overview", icon: StoreIcon, href: "/assets/personal%20dash/marketplace" },
+  { label: "Help & Community Hub", icon: ChatIcon, href: "/assets/personal%20dash/community" },
 ];
 
 export const utilityNavItems = [
-  { label: "Account Settings", icon: SettingsIcon },
+  { label: "Account Settings", icon: SettingsIcon, href: "/assets/personal%20dash/settings" },
   { label: "Log Out", icon: LogoutIcon },
 ];
 
