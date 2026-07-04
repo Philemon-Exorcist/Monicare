@@ -44,7 +44,7 @@ export default function MyCirclePage() {
 
   useEffect(() => {
     try {
-      const stored = JSON.parse(window.localStorage.getItem("monicare_circle_records") || "[]");
+      const stored = safeParse(window.localStorage.getItem("monicare_circle_records"), []);
       setRecords(Array.isArray(stored) ? stored : []);
     } catch {
       setRecords([]);
@@ -101,6 +101,16 @@ export default function MyCirclePage() {
       </div>
     </div>
   );
+}
+
+function safeParse(value, fallback) {
+  if (!value) return fallback;
+
+  try {
+    return JSON.parse(value);
+  } catch {
+    return fallback;
+  }
 }
 
 function CircleCard({ record }) {

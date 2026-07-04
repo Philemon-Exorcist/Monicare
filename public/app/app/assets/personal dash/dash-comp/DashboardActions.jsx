@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useRouter } from "next/navigation";
 import { LinkIcon, PlusIcon } from "./icons";
@@ -8,6 +8,10 @@ export default function DashboardActions() {
 
   const handleCreateGroup = () => {
     router.push("/assets/personal%20dash/groupinit");
+  };
+
+  const handleJoinGroup = () => {
+    router.push("/assets/personal%20dash/join");
   };
 
   return (
@@ -20,7 +24,11 @@ export default function DashboardActions() {
         <PlusIcon className="h-4 w-4" />
         Create New Esusu Circle
       </button>
-      <button className="inline-flex h-12 items-center justify-center gap-2 rounded-lg border border-neutral-300 bg-white px-5 text-sm font-black text-black transition hover:bg-neutral-50">
+      <button
+        type="button"
+        onClick={handleJoinGroup}
+        className="inline-flex h-12 items-center justify-center gap-2 rounded-lg border border-neutral-300 bg-white px-5 text-sm font-black text-black transition hover:bg-neutral-50"
+      >
         <LinkIcon className="h-4 w-4" />
         Join Circle via Invite Link
       </button>

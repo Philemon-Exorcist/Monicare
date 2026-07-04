@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -62,6 +62,17 @@ export default function AuthPage() {
     }
 
     return age >= 18;
+  };
+
+  const getPostAuthRedirect = () => {
+    if (typeof window === "undefined") return "/dashboard";
+    return window.localStorage.getItem("monicare_post_auth_redirect") || "/dashboard";
+  };
+
+  const clearPostAuthRedirect = () => {
+    if (typeof window !== "undefined") {
+      window.localStorage.removeItem("monicare_post_auth_redirect");
+    }
   };
 
   const handleSubmit = async (event) => {
@@ -129,7 +140,9 @@ export default function AuthPage() {
         }
 
         setSuccess(loginResponse?.message || "Login successful.");
-        router.push("/dashboard");
+        const redirectTo = getPostAuthRedirect();
+        clearPostAuthRedirect();
+        router.push(redirectTo);
       }
     } catch (error) {
       const message =
@@ -383,9 +396,6 @@ export default function AuthPage() {
                 {isLoading ? "Processing..." : mode === "signup" ? "Create an Account" : "Log In"}
               </button>
             </form>
-
-           
-            
           </div>
         </div>
       </div>

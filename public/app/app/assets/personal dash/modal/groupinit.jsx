@@ -38,7 +38,7 @@ export default function GroupInit() {
 
   const handleInitialize = () => {
     if (typeof window !== "undefined") {
-      const existing = JSON.parse(window.localStorage.getItem("monicare_circle_records") || "[]");
+      const existing = safeParse(window.localStorage.getItem("monicare_circle_records"), []);
       const nextRecords = [circleRecord, ...existing.filter((item) => item.inviteLink !== inviteLink)];
       window.localStorage.setItem("monicare_circle_records", JSON.stringify(nextRecords));
     }
@@ -89,6 +89,16 @@ export default function GroupInit() {
       </div>
     </div>
   );
+}
+
+function safeParse(value, fallback) {
+  if (!value) return fallback;
+
+  try {
+    return JSON.parse(value);
+  } catch {
+    return fallback;
+  }
 }
 
 function SuccessState({ inviteLink, onCopy, copyState, onViewCircles }) {
