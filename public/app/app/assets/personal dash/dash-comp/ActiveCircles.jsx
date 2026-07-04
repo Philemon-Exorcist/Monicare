@@ -1,6 +1,38 @@
-import { circles } from "./dashboardData";
+﻿"use client";
+
+import { useEffect, useState } from "react";
+import { circles as fallbackCircles } from "./dashboardData";
+
+const RECORDS_STORAGE_KEY = "monicare_circle_records";
+
+function safeParse(value, fallback) {
+  if (!value) return fallback;
+
+  try {
+    return JSON.parse(value);
+  } catch {
+    return fallback;
+  }
+}
 
 export default function ActiveCircles() {
+  const [circles, setCircles] = useState(fallbackCircles);
+
+  useEffect(() => {
+    const stored = safeParse(window.localStorage.getItem(RECORDS_STORAGE_KEY), []);
+    if (Array.isArray(stored) && stored.length) {
+      setCircles(
+        stored.map((item) => ({
+          name: item.name,
+          status: item.status,
+          position: item.selectedSlot || item.position || "Pending slot",
+          amount: item.amount,
+          cadence: item.cadence,
+        }))
+      );
+    }
+  }, []);
+
   return (
     <section className="mt-8">
       <div className="mb-4 flex items-center justify-between gap-4">

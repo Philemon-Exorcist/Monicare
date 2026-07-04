@@ -1,6 +1,41 @@
-import { contributions } from "./dashboardData";
+﻿"use client";
+
+import { useEffect, useState } from "react";
+import { contributions as fallbackContributions } from "./dashboardData";
+
+const RECORDS_STORAGE_KEY = "monicare_circle_records";
+
+function safeParse(value, fallback) {
+  if (!value) return fallback;
+
+  try {
+    return JSON.parse(value);
+  } catch {
+    return fallback;
+  }
+}
 
 export default function ContributionHistory() {
+  const [contributions, setContributions] = useState(fallbackContributions);
+
+  useEffect(() => {
+    const stored = safeParse(window.localStorage.getItem(RECORDS_STORAGE_KEY), []);
+    if (Array.isArray(stored) && stored.length) {
+      setContributions(
+        stored.map((item, index) => ({
+          date: new Date(item.createdAt || Date.now() - index * 86400000).toLocaleDateString("en-GB", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+          }),
+          circle: item.name,
+          amount: item.amount,
+          status: item.status === "Joined" ? "Joined circle" : "Created circle",
+        }))
+      );
+    }
+  }, []);
+
   return (
     <section className="mt-8 pb-10">
       <div className="mb-4 flex items-center justify-between gap-4">

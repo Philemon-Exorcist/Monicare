@@ -1,4 +1,4 @@
-export function GridIcon(props) {
+﻿export function GridIcon(props) {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" {...props}>
       <rect x="4" y="4" width="6" height="6" rx="1" />
@@ -20,23 +20,19 @@ export function UsersIcon(props) {
   );
 }
 
-export function StoreIcon(props) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" {...props}>
-      <path d="M4 10h16l-1.5-5h-13L4 10Z" />
-      <path d="M5 10v10h14V10" />
-      <path d="M9 20v-6h6v6" />
-      <path d="M3 10a3 3 0 0 0 6 0" />
-      <path d="M9 10a3 3 0 0 0 6 0" />
-      <path d="M15 10a3 3 0 0 0 6 0" />
-    </svg>
-  );
-}
-
 export function ChatIcon(props) {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" {...props}>
       <path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 8.7 8.7 0 0 1-3-.52L3 21l1.7-5.1a8.5 8.5 0 1 1 16.3-4.4Z" />
+    </svg>
+  );
+}
+
+export function BellIcon(props) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" {...props}>
+      <path d="M15 17H5l1.5-2.5V10a5.5 5.5 0 0 1 11 0v4.5L19 17h-4" />
+      <path d="M10 17a2 2 0 0 0 4 0" />
     </svg>
   );
 }
