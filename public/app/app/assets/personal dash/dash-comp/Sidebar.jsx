@@ -1,7 +1,9 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import { navItems, utilityNavItems } from "./dashboardData";
+import { ChatIcon } from "./icons";
 
 export default function Sidebar({ profile, isLoading }) {
   const router = useRouter();
@@ -20,6 +22,16 @@ export default function Sidebar({ profile, isLoading }) {
     router.push("/auth/login");
   };
 
+  const pathname = usePathname();
+
+  // Replace 'Market Overview' with 'Notifications'
+  const updatedNavItems = navItems.map((item) => {
+    if (item.label === "Market Overview") {
+      return { ...item, label: "Notifications", icon: ChatIcon, href: "/assets/personal-dash/notifications" };
+    }
+    return item;
+  });
+
   return (
     <aside className="flex w-full flex-col border-b border-neutral-200 bg-[#fbfbfa] px-5 py-6 lg:min-h-screen lg:w-[285px] lg:border-b-0 lg:border-r lg:px-8 lg:py-12">
       <div className="flex items-center gap-3">
@@ -30,8 +42,8 @@ export default function Sidebar({ profile, isLoading }) {
       </div>
 
       <nav className="mt-8 flex gap-2 overflow-x-auto pb-2 lg:flex-col lg:overflow-visible lg:pb-0">
-        {navItems.map((item) => (
-          <NavButton key={item.label} {...item} />
+        {updatedNavItems.map((item) => (
+          <NavButton key={item.label} {...item} active={pathname === item.href} />
         ))}
       </nav>
 
@@ -52,18 +64,25 @@ export default function Sidebar({ profile, isLoading }) {
   );
 }
 
-function NavButton({ label, icon: Icon, active = false, compact = false, onClick }) {
+function NavButton({ label, icon: Icon, href, active = false, compact = false, onClick }) {
+  const className = `flex h-10 shrink-0 items-center gap-3 rounded-lg px-3 text-left text-sm font-semibold transition ${
+    active ? "bg-[#070707] text-white" : "text-neutral-500 hover:bg-neutral-100 hover:text-black"
+  } ${compact ? "lg:px-0 lg:hover:bg-transparent" : ""}`;
+
+  if (onClick) {
+    return (
+      <button type="button" onClick={onClick} className={className}>
+        <Icon className="h-4 w-4 shrink-0" />
+        <span className="whitespace-nowrap">{label}</span>
+      </button>
+    );
+  }
+
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`flex h-10 shrink-0 items-center gap-3 rounded-lg px-3 text-left text-sm font-semibold transition ${
-        active ? "bg-[#070707] text-white" : "text-neutral-500 hover:bg-neutral-100 hover:text-black"
-      } ${compact ? "lg:px-0 lg:hover:bg-transparent" : ""}`}
-    >
+    <Link href={href || "#"} className={className}>
       <Icon className="h-4 w-4 shrink-0" />
       <span className="whitespace-nowrap">{label}</span>
-    </button>
+    </Link>
   );
 }
 
