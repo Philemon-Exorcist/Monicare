@@ -65,7 +65,7 @@ async def home(current_user=Depends(verify_user_token)):
             groups_resp = (
                 supabase_admin.table("savings_groups")
                 .select(
-                    "id,title,contribution_amount,cycle_period,max_slots,status,current_cycle_round,nomba_sub_account_id,creator_id,group_link,created_at"
+                    "id,title,contribution_amount,cycle_period,max_slots,status,current_cycle_round,nomba_sub_account_id,creator_id,group_link,activated_at,created_at"
                 )
                 .in_("id", group_ids)
                 .execute()
@@ -96,6 +96,8 @@ async def home(current_user=Depends(verify_user_token)):
                 "current_cycle_round": g.get("current_cycle_round"),
                 "nomba_sub_account_id": g.get("nomba_sub_account_id"),
                 "creator_id": g.get("creator_id"),
+                "group_link": g.get("group_link"),
+                "activated_at": g.get("activated_at"),
                 "created_at": g.get("created_at"),
                 "joined_at": membership_by_group.get(gid, {}).get("joined_at"),
                 "rotation_position": membership_by_group.get(gid, {}).get("rotation_position"),

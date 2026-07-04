@@ -631,3 +631,22 @@ async def create_virtual_account(user_uuid: str, first_name: str, last_name: str
    
    
 """
+
+
+
+# Fetch group details along with an accurate count of joined participants
+group_query = supabase_admin.table("savings_groups") \
+    .select("*, group_members(count)") \
+    .eq("id", target_group_id) \
+    .single() \
+    .execute()
+
+# Extract data to build your response payload
+group_data = group_query.data
+joined_count = group_data.get("group_members", [{}])[0].get("count", 0)
+
+response_payload = {
+    **group_data,
+    "total_joined_members": joined_count,
+    "is_full": joined_count >= group_data["max_slots"]
+}

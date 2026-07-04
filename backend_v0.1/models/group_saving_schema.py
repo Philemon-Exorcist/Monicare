@@ -1,10 +1,9 @@
 
 
 
-
 from datetime import datetime
 from enum import Enum
-from typing import Optional, List
+from typing import Optional
 from uuid import UUID
 from pydantic import BaseModel, Field, condecimal, conint
 
@@ -47,6 +46,10 @@ class SavingsGroupUpdate(BaseModel):
     current_cycle_round: Optional[conint(gt=0)] = None
 
 
+class GroupActivationRequest(BaseModel):
+    group_id: UUID
+
+
 # 5. Schema for database reads / API responses
 class SavingsGroupResponse(SavingsGroupBase):
     group_id: UUID
@@ -54,6 +57,8 @@ class SavingsGroupResponse(SavingsGroupBase):
     status: GroupLifecycleEnum
     current_cycle_round: int
     nomba_sub_account_id: str
+    group_link: Optional[str] = None
+    activated_at: Optional[datetime] = None
     created_at: datetime
 
     class Config:

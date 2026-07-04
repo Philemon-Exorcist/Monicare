@@ -11,6 +11,7 @@ import uvicorn
 from fastapi.middleware.cors import CORSMiddleware
 from pages.register import router
 from core.create_savings_group import group_router
+from core.activate_group import activate_groups_by_max_slots
 from pages.home import home_router
 
 
@@ -30,7 +31,10 @@ app = FastAPI(title="Monicare")
 KEEP_ALIVE_URL = os.environ.get("KEEP_ALIVE_URL", "https://monicare.onrender.com/health")
 KEEP_ALIVE_INTERVAL_SECONDS = int(os.environ.get("KEEP_ALIVE_INTERVAL_SECONDS", 600))
 ENABLE_KEEP_ALIVE = os.environ.get("ENABLE_KEEP_ALIVE", "true").lower() in ("1", "true", "yes")
+AUTO_ACTIVATE_INTERVAL_SECONDS = int(os.environ.get("AUTO_ACTIVATE_INTERVAL_SECONDS", 300))
+ENABLE_AUTO_ACTIVATION = os.environ.get("ENABLE_AUTO_ACTIVATION", "true").lower() in ("1", "true", "yes")
 app.state.keepalive_task = None
+app.state.auto_activate_task = None
 
 app.include_router(router)
 app.include_router(group_router)
@@ -56,18 +60,34 @@ async def keep_alive_loop() -> None:
             await asyncio.sleep(KEEP_ALIVE_INTERVAL_SECONDS)
 
 
+async def auto_activate_loop() -> None:
+    while True:
+        try:
+            activated_ids = await activate_groups_by_max_slots()
+            if activated_ids:
+                logger.info("Auto-activated groups: %s", ", ".join(activated_ids))
+        except Exception as err:
+            logger.error("Auto-activation loop failed: %s", err, exc_info=True)
+        await asyncio.sleep(AUTO_ACTIVATE_INTERVAL_SECONDS)
+
+
 @app.on_event("startup")
 async def on_startup() -> None:
     if ENABLE_KEEP_ALIVE:
         logger.info("Keepalive enabled. Pinging %s every %s seconds.", KEEP_ALIVE_URL, KEEP_ALIVE_INTERVAL_SECONDS)
         app.state.keepalive_task = asyncio.create_task(keep_alive_loop())
 
+    if ENABLE_AUTO_ACTIVATION:
+        logger.info("Auto-activation enabled. Polling every %s seconds.", AUTO_ACTIVATE_INTERVAL_SECONDS)
+        app.state.auto_activate_task = asyncio.create_task(auto_activate_loop())
+
 
 @app.on_event("shutdown")
 async def on_shutdown() -> None:
-    task = getattr(app.state, "keepalive_task", None)
-    if task is not None:
-        task.cancel()
+    for task_name in ("keepalive_task", "auto_activate_task"):
+        task = getattr(app.state, task_name, None)
+        if task is not None:
+            task.cancel()
 
 
 @app.exception_handler(RequestValidationError)

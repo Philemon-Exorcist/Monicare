@@ -6,7 +6,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from app.auth import verify_user_token
 from app.supabase_client import get_supabase_admin
 from core.generate_group_link import generate_group_link
-from models.group_saving_schema import SavingsGroupCreate
+from core.activate_group import activate_group_by_button
+from models.group_saving_schema import GroupActivationRequest, SavingsGroupCreate
 from models.nomba_schema import settings
 
 logger = logging.getLogger("Monicare.group_saving")
@@ -128,3 +129,14 @@ async def create_savings_group(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Unable to create savings group at this time.",
         )
+
+
+@group_router.post("/activate_group", status_code=status.HTTP_200_OK)
+async def activate_group(payload: GroupActivationRequest, current_user=Depends(verify_user_token)):
+    creator_id = getattr(current_user, "id", None)
+    result = await activate_group_by_button(str(payload.group_id), str(creator_id))
+    return {
+        "status": "success",
+        "message": result["message"],
+        "data": result.get("data", {}),
+    }
