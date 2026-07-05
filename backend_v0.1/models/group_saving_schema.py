@@ -7,8 +7,8 @@ from pydantic import BaseModel, Field, condecimal, conint
 
 # 1. Mirror your PostgreSQL database Enums
 class GroupPeriodEnum(str, Enum):
-    DAILY = "DAILY"
     WEEKLY = "WEEKLY"
+    BI_WEEKLY = "BI_WEEKLY"
     MONTHLY = "MONTHLY"
 
 
@@ -16,7 +16,7 @@ class GroupLifecycleEnum(str, Enum):
     DRAFT = "DRAFT"
     ACTIVE = "ACTIVE"
     COMPLETED = "COMPLETED"
-    CANCELLED = "CANCELLED"
+    PROPOSED_CHANGES = "PROPOSED_CHANGES"
 
 
 # 2. Base Properties (Expected from the frontend)

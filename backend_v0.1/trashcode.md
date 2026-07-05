@@ -650,3 +650,16 @@ response_payload = {
     "total_joined_members": joined_count,
     "is_full": joined_count >= group_data["max_slots"]
 }
+
+
+
+
+Base: https://api.nomba.com (sandbox: https://sandbox.nomba.com). Every call: Authorization: Bearer + accountId: header; scope to your sub-account via the {subAccountId} path param.
+
+Dedicated Virtual Accounts / VAs as infrastructure - unique VA per user, auto-reconcile via webhooks
+
+POST /v1/accounts/virtual/{subAccountId} - create a VA under your sub-account
+POST /v1/accounts/virtual/list - list/filter your VAs
+GET /v1/accounts/virtual/{identifier} - fetch a VA · DELETE /v1/accounts/virtual/{identifier} - expire it
+GET /v1/accounts/{subAccountId}/balance - balance
+GET /v1/transactions/accounts/{subAccountId} - reconcile inflows · GET /v1/transactions/requery/{sessionId} - confirm

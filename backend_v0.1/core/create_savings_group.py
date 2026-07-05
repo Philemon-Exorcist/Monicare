@@ -51,7 +51,7 @@ async def create_savings_group(
 
     group_row = {
         "creator_id": str(creator_uuid),
-        "title": payload.group_name.strip(),
+        "group_name": payload.group_name.strip(),
         "contribution_amount": str(payload.contribution_amount),
         "cycle_period": payload.cycle_period.value,
         "max_slots": payload.max_slots,
@@ -74,7 +74,7 @@ async def create_savings_group(
                 detail="Group creation returned no record.",
             )
 
-        group_id = created_group.get("id")
+        group_id = created_group.get("id") or created_group.get("group_id")
         if not group_id:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -83,7 +83,7 @@ async def create_savings_group(
 
         group_link = generate_group_link(str(group_id))
         try:
-            supabase_admin.table("savings_groups").update({"group_link": group_link}).eq("id", group_id).execute()
+            supabase_admin.table("savings_groups").update({"group_link": group_link}).eq("group_id", group_id).execute()
         except Exception as err:
             logger.error("Failed to persist group link for %s: %s", group_id, err, exc_info=True)
             raise HTTPException(
@@ -94,7 +94,7 @@ async def create_savings_group(
         supabase_admin.table("group_members").insert({
             "group_id": group_id,
             "user_id": str(creator_uuid),
-            "rotation_position": 3,
+            "slot_position": 1,
         }).execute()
 
         return {
@@ -102,7 +102,7 @@ async def create_savings_group(
             "message": "Savings group created successfully.",
             "data": {
                 "group_id": group_id,
-                "group_name": created_group.get("title"),
+                "group_name": created_group.get("group_name"),
                 "contribution_amount": created_group.get("contribution_amount"),
                 "cycle_period": created_group.get("cycle_period"),
                 "max_slots": created_group.get("max_slots"),
@@ -121,7 +121,7 @@ async def create_savings_group(
         logger.error("Failed to create savings group: %s", err, exc_info=True)
         try:
             if "group_id" in locals():
-                supabase_admin.table("savings_groups").delete().eq("id", group_id).execute()
+                supabase_admin.table("savings_groups").delete().eq("group_id", group_id).execute()
         except Exception as rollback_err:
             logger.error("Failed to rollback savings group %s: %s", group_id, rollback_err)
 
