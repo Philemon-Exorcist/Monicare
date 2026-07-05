@@ -76,5 +76,5 @@ class SavingsGroupDetailResponse(SavingsGroupResponse):
     )
 
 
-class GroupLink(BaSeModel):
+class GroupLink(BaseModel):
     link : str
