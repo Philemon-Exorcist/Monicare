@@ -173,9 +173,9 @@ async def join_group_via_link(group_link: str, current_user=Depends(verify_user_
 """
 @link_router.post("/accept_invitation", status_code=status.HTTP_200_OK)
 async def join_group_via_link(group_link: str, current_user=Depends(verify_user_token)):
-    """
+
     Allows a user to join a savings group using a unique group link.
-    """
+
     supabase_admin = get_supabase_admin()
     current_user_id = getattr(current_user, "id", None)
 
