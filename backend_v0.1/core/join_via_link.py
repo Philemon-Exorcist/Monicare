@@ -3,6 +3,7 @@
 from fastapi import HTTPException, status, APIRouter, Depends
 from app.auth import verify_user_token      
 from app.supabase_client import get_supabase_admin
+from models.group_saving_schema import GroupLink
 
 
 link_router = APIRouter(prefix="/api/v1/group_saving", tags=["Group Saving"])
@@ -45,6 +46,10 @@ async def join_group_via_link(group_link: str, current_user=Depends(verify_user_
             status_code=status.HTTP_404_NOT_FOUND,
             detail="No savings group found for the provided link.",
         )
+    return {
+        "message": "Group details fetched successfully.",
+        "data": group,
+    }
     
 
 # this assigned to a button that allows a user to join a group via the group link by pressing accept button
@@ -129,3 +134,8 @@ async def join_group_via_link(group_link: str, current_user=Depends(verify_user_
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="This savings group is full.",
         )
+
+    return {
+        "message": "You can join this savings group.",
+        "data": group,
+    }

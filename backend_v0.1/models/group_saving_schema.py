@@ -74,3 +74,7 @@ class SavingsGroupDetailResponse(SavingsGroupResponse):
     estimated_lifecycle_duration_days: int = Field(
         ..., description="Total days required to run this complete Esusu loop"
     )
+
+
+class GroupLink(BaSeModel):
+    link : str
