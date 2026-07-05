@@ -152,8 +152,7 @@ async def join_group_via_link(group_link: str, current_user=Depends(verify_user_
         supabase_admin.table("group_members").insert({
             "group_id": target_group_id,
             "user_id": str(current_user_id),
-            "slot_position": assigned_slot_position,
-            "role": "MEMBER"
+            "slot_position": assigned_slot_position
         }).execute()
         
     except Exception as insert_err:
