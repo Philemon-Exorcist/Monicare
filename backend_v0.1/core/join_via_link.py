@@ -121,7 +121,7 @@ async def join_group_via_link(group_link: str, current_user=Depends(verify_user_
             supabase_admin.table("group_members")
             .select("user_id", count="exact")
             #.eq("group_id", str(group["id"]))
-            eq("group_link", group_link)
+            .eq("group_link", group_link)
             .execute()
         )
         members_count = members_count_response.count or 0
