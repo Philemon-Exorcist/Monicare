@@ -1,10 +1,8 @@
 
-from pydantic import BaseModel, Field
 from typing import Optional
-from pydantic_settings import BaseSettings, SettingsConfigDict
 
-from pydantic import BaseModel, Field
-from typing import Optional
+from pydantic import BaseModel, Field, AliasChoices
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class NombaVirtualAccountRequest(BaseModel):
     account_ref: str = Field(alias="accountRef")
@@ -49,10 +47,12 @@ class NombaTransferRequest(BaseModel):
 class AppSettings(BaseSettings):
     NOMBA_BASE_URL: str
     NOMBA_SANDBOX_URL: str
-    NOMBA_LIVE_CLIENT_ID: str = Field(alias="NOMBA_LIVE_ClIENT_ID")
+    NOMBA_LIVE_CLIENT_ID: str = Field(
+        validation_alias=AliasChoices("NOMBA_LIVE_CLIENT_ID", "NOMBA_LIVE_ClIENT_ID")
+    )
     NOMBA_LIVE_PRIVATE_KEY: str = Field(alias="NOMBA_LIVE_PRIVATE_KEY")
     Main_Account_ID: str
-    NOMBA_SUB_ACCOUNT_ID: str  # Mandatory for sub-account-scoped creation
+    NOMBA_SUB_ACCOUNT_ID: Optional[str] = None
     NOMBA_WEBHOOK_SECRET: Optional[str] = None
 
     model_config = SettingsConfigDict(

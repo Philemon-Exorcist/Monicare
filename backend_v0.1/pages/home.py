@@ -116,3 +116,6 @@ async def home(current_user=Depends(verify_user_token)):
             "groups": groups,
         },
     }
+
+
+# need to add slot position

@@ -60,6 +60,7 @@ CREATE TABLE savings_groups (
     max_slots INT NOT NULL,
     status group_lifecycle_enum DEFAULT 'DRAFT' NOT NULL,
     current_cycle_round INT DEFAULT 1 NOT NULL,
+    current_total_saved NUMERIC(15, 2) NOT NULL DEFAULT 0.00,
     
     -- All hackathon savings circles point to your single active Sub-Account ID vault
     nomba_sub_account_id TEXT NOT NULL,
@@ -78,4 +79,13 @@ CREATE TABLE group_members (
     -- Database Constraints to Enforce App Rules:
     PRIMARY KEY (group_id, user_id),     -- Enforces that a user can only link to a group once
     UNIQUE (group_id, rotation_position) -- Enforces that no two members can steal or share a position slot
+);
+
+-- â”€â”€â”€ STEP 6: CREATE THE GROUP CONTRIBUTION LEDGER â”€â”€â”€
+CREATE TABLE group_contributions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    group_id UUID REFERENCES savings_groups(id) ON DELETE CASCADE NOT NULL,
+    user_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
+    amount NUMERIC(15, 2) NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );

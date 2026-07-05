@@ -691,3 +691,42 @@ GET /v1/transactions/accounts/{subAccountId} - reconcile inflows · GET /v1/tran
             detail="You are already an active member of this savings group.",
         )
     """
+
+
+
+    async def lookup_bank_account_details(self, payload: BankLookupRequest) -> dict:
+        """
+        Queries Nomba's identity resolution matrix to fetch 
+        and verify the legal owner name of a NUBAN bank account number.
+        """
+        token = await self._get_oauth_token()
+        url = f"{self.base_url}/v1/accounts/lookup"
+        
+        headers = {
+            "Authorization": f"Bearer {token}",
+            "accountId": self.parent_account_id,
+            "Content-Type": "application/json"
+        }
+        
+        json_data = payload.model_dump(by_alias=True)
+        
+        async with httpx.AsyncClient() as client:
+            try:
+                response = await client.post(url, json=json_data, headers=headers)
+                response.raise_for_status()
+                res_data = response.json()
+                
+                if res_data.get("code") != "00":
+                    raise Exception(f"Account resolution rejected by switch: {res_data.get('description')}")
+                    
+                # Extract structural inner details
+                account_info = res_data.get("data", {})
+                return {
+                    "success": True,
+                    "account_name": account_info.get("accountName"),
+                    "account_number": account_info.get("accountNumber"),
+                    "bank_code": account_info.get("bankCode")
+                }
+            except httpx.HTTPStatusError as http_err:
+                raise Exception(f"Nomba Bank Lookup Layer Error: {http_err.response.text}")
+

@@ -76,5 +76,14 @@ class SavingsGroupDetailResponse(SavingsGroupResponse):
     )
 
 
+class GroupContributionRequest(BaseModel):
+    group_id: UUID = Field(..., description="The unique database identifier of the savings group")
+    amount: float = Field(..., gt=0, description="The monetary amount being contributed. Must be greater than 0.")
+
+    model_config = {
+        "populate_by_name": True,
+    }
+
+
 class GroupLink(BaseModel):
     link : str

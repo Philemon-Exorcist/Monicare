@@ -1,8 +1,7 @@
 ﻿import os
 from urllib.parse import urljoin
 
-#DEFAULT_FRONTEND_BASE_URL = "https://monicare.onrender.com"
-DEFAULT_FRONTEND_BASE_URL = "monicare-theta.vercel.app"  # Local development override
+DEFAULT_FRONTEND_BASE_URL = "https://monicare-theta.vercel.app"
 
 
 def generate_group_link(group_id: str, base_url: str | None = None) -> str:
