@@ -27,7 +27,8 @@ async def join_group_via_link(group_link: str, current_user=Depends(verify_user_
     try:
         group_response = (
             supabase_admin.table("savings_groups")
-            .select("group_id, title, max_slots, status","contribution_amount","cycle_period")
+            .select("group_id, group_name, max_slots, status","contribution_amount",
+                    "cycle_period","status","current_cycle_round","group_link")
             .eq("group_link", group_link)
             .maybe_single()
             .execute()
@@ -66,7 +67,8 @@ async def join_group_via_link(group_link: str, current_user=Depends(verify_user_
     try:
         group_response = (
             supabase_admin.table("savings_groups")
-            .select("id, title, max_slots, status","contribution_amount","cycle_period")
+            .select("group_id, group_name, max_slots, status","contribution_amount","cycle_period","created_at",
+                        "status","current_cycle_round","group_link")
             .eq("group_link", group_link)
             .maybe_single()
             .execute()
