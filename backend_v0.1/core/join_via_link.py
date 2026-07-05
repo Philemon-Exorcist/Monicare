@@ -82,7 +82,7 @@ async def join_group_via_link(group_link: str, current_user=Depends(verify_user_
             .maybe_single()
             .execute()
         )
-        group = group_response.data
+        group = group_response.data if group_response else None
     except Exception as err:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -98,16 +98,20 @@ async def join_group_via_link(group_link: str, current_user=Depends(verify_user_
     target_group_id = group["group_id"]
 
     # 2. Check for pre-existing duplicate group memberships
+
     try:
         membership_response = (
             supabase_admin.table("group_members")
             .select("user_id")
             .eq("user_id", str(current_user_id))
-            .eq("group_id", target_group_id) # FIX: Query cleanly on group_id relational keys
+            .eq("group_id", target_group_id)
             .maybe_single()
             .execute()
         )
-        membership = membership_response.data
+        
+        #  Check if membership_response is None first before pulling .data
+        membership = membership_response.data if membership_response else None
+        
     except Exception as err:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -119,7 +123,7 @@ async def join_group_via_link(group_link: str, current_user=Depends(verify_user_
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="You are already an active member of this savings group.",
         )
-
+   
     # 3. Calculate active member occupancy limits
     try:
         members_count_response = (

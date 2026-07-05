@@ -663,3 +663,31 @@ POST /v1/accounts/virtual/list - list/filter your VAs
 GET /v1/accounts/virtual/{identifier} - fetch a VA · DELETE /v1/accounts/virtual/{identifier} - expire it
 GET /v1/accounts/{subAccountId}/balance - balance
 GET /v1/transactions/accounts/{subAccountId} - reconcile inflows · GET /v1/transactions/requery/{sessionId} - confirm
+
+
+
+
+ 
+    """
+    try:
+        membership_response = (
+            supabase_admin.table("group_members")
+            .select("user_id")
+            .eq("user_id", str(current_user_id))
+            .eq("group_id", target_group_id) # FIX: Query cleanly on group_id relational keys
+            .maybe_single()
+            .execute()
+        )
+        membership = membership_response.data
+    except Exception as err:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error checking pre-existing membership constraints: {err}",
+        )
+
+    if membership:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="You are already an active member of this savings group.",
+        )
+    """
