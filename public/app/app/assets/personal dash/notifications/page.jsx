@@ -24,11 +24,18 @@ const DEFAULT_NOTIFICATIONS = [
 export default function NotificationsPage() {
   const [profile, setProfile] = useState(null);
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
+  const [notifications, setNotifications] = useState([]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
     setIsLoadingProfile(false);
+    const timeout = window.setTimeout(() => {
+      setNotifications([]);
+    }, 400);
+    return () => window.clearTimeout(timeout);
   }, []);
+
+  const shouldShowPlaceholder = notifications.length === 0;
 
   return (
     <div className="min-h-screen bg-white text-black">
@@ -67,24 +74,42 @@ export default function NotificationsPage() {
             <p className="font-mono text-[10px] uppercase tracking-[0.32em] text-neutral-500">Notifications</p>
             <h1 className="mt-3 text-3xl font-black tracking-tight text-black">Activity feed</h1>
             <p className="mt-3 text-sm leading-6 text-neutral-500">
-              Updates related to your circles and invites will appear here while backend delivery is being wired.
+              Your saving circle notifications will appear here once the backend delivers activity data.
             </p>
 
-            <div className="mt-8 space-y-4">
-              {DEFAULT_NOTIFICATIONS.map((item) => (
-                <article key={item.title} className="rounded-2xl border border-neutral-200 bg-[#fbfbfa] p-5">
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <h2 className="text-sm font-black text-black">{item.title}</h2>
-                      <p className="mt-2 text-sm text-neutral-500">{item.detail}</p>
+            {shouldShowPlaceholder ? (
+              <div className="mt-8 rounded-3xl border border-dashed border-neutral-300 bg-[#fafafa] px-6 py-10 text-center text-neutral-500 shadow-sm">
+                <p className="text-base font-black text-black">Waiting for notifications</p>
+                <p className="mx-auto mt-3 max-w-xl text-sm leading-6">
+                  We are ready to show your activity feed when notification data is available from the backend.
+                </p>
+                <div className="mt-8 grid gap-4 sm:grid-cols-3">
+                  {Array.from({ length: 3 }).map((_, index) => (
+                    <div key={index} className="rounded-3xl border border-neutral-200 bg-white p-4 text-left">
+                      <div className="h-3 w-24 rounded-full bg-neutral-200" />
+                      <div className="mt-3 h-4 w-32 rounded-full bg-neutral-200" />
+                      <div className="mt-4 h-3 w-16 rounded-full bg-neutral-200" />
                     </div>
-                    <span className="whitespace-nowrap font-mono text-[10px] uppercase tracking-[0.28em] text-neutral-400">
-                      {item.time}
-                    </span>
-                  </div>
-                </article>
-              ))}
-            </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="mt-8 space-y-4">
+                {notifications.map((item) => (
+                  <article key={item.title} className="rounded-2xl border border-neutral-200 bg-[#fbfbfa] p-5">
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <h2 className="text-sm font-black text-black">{item.title}</h2>
+                        <p className="mt-2 text-sm text-neutral-500">{item.detail}</p>
+                      </div>
+                      <span className="whitespace-nowrap font-mono text-[10px] uppercase tracking-[0.28em] text-neutral-400">
+                        {item.time}
+                      </span>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            )}
           </section>
         </main>
       </div>

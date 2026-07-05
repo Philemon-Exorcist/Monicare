@@ -31,7 +31,11 @@ export default function Sidebar({ profile, isLoading }) {
 
       <nav className="mt-8 flex gap-2 overflow-x-auto pb-2 lg:flex-col lg:overflow-visible lg:pb-0">
         {navItems.map((item) => (
-          <NavButton key={item.label} {...item} />
+          <NavButton
+            key={item.label}
+            {...item}
+            onClick={item.href ? () => router.push(item.href) : undefined}
+          />
         ))}
       </nav>
 
@@ -43,7 +47,7 @@ export default function Sidebar({ profile, isLoading }) {
             key={item.label}
             {...item}
             compact
-            onClick={item.label === "Log Out" ? handleLogout : undefined}
+            onClick={item.label === "Log Out" ? handleLogout : item.href ? () => router.push(item.href) : undefined}
           />
         ))}
       </div>

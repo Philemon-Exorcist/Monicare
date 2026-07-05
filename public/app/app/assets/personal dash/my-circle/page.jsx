@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { getDashboardProfile } from "../../../components/api";
 import Sidebar from "../dash-comp/Sidebar";
 
@@ -42,12 +43,24 @@ export default function MyCirclePage() {
     };
   }, []);
 
+  const [isLoadingRecords, setIsLoadingRecords] = useState(true);
+  const router = useRouter();
+
   useEffect(() => {
     try {
       const stored = safeParse(window.localStorage.getItem("monicare_circle_records"), []);
-      setRecords(Array.isArray(stored) ? stored : []);
+      setRecords(
+        Array.isArray(stored)
+          ? stored.map((record, index) => ({
+              ...record,
+              id: record.id || record.name?.toLowerCase().replace(/\s+/g, "-") || `circle-${index}`,
+            }))
+          : []
+      );
     } catch {
       setRecords([]);
+    } finally {
+      setIsLoadingRecords(false);
     }
   }, []);
 
@@ -93,7 +106,24 @@ export default function MyCirclePage() {
               </p>
 
               <div className="mt-8 grid gap-4">
-                {records.length ? records.map((record) => <CircleCard key={`${record.name}-${record.createdAt}`} record={record} />) : <EmptyState />}
+                {isLoadingRecords ? (
+                  <div className="rounded-3xl border border-dashed border-neutral-300 bg-[#fafafa] px-6 py-10 text-center text-neutral-500 shadow-sm">
+                    <p className="text-base font-black text-black">Loading circles...</p>
+                    <p className="mx-auto mt-3 max-w-xl text-sm leading-6">
+                      Your saved circles will appear here once they are retrieved from the backend.
+                    </p>
+                  </div>
+                ) : records.length ? (
+                  records.map((record) => (
+                    <CircleCard
+                      key={`${record.name}-${record.createdAt}`}
+                      record={record}
+                      onView={() => router.push(`/assets/personal%20dash/group-saving/${encodeURIComponent(record.id)}`)}
+                    />
+                  ))
+                ) : (
+                  <EmptyState />
+                )}
               </div>
             </div>
           </section>
@@ -113,9 +143,12 @@ function safeParse(value, fallback) {
   }
 }
 
-function CircleCard({ record }) {
+function CircleCard({ record, onView }) {
   return (
-    <article className="rounded-2xl border border-neutral-200 bg-[#fbfbfa] p-5">
+    <article
+      onClick={onView}
+      className="group cursor-pointer rounded-2xl border border-neutral-200 bg-[#fbfbfa] p-5 transition hover:border-black"
+    >
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-lg font-black text-black">{record.name}</p>
@@ -137,8 +170,11 @@ function CircleCard({ record }) {
 
 function EmptyState() {
   return (
-    <div className="rounded-2xl border border-dashed border-neutral-300 bg-white px-6 py-10 text-center text-sm text-neutral-500">
-      No circles recorded yet. Create or join a circle and it will appear here.
+    <div className="rounded-3xl border border-dashed border-neutral-300 bg-[#fafafa] px-8 py-14 text-center text-neutral-500 shadow-sm">
+      <p className="text-lg font-black text-black">No circles recorded yet</p>
+      <p className="mt-3 mx-auto max-w-xl text-sm leading-6">
+        Create a new circle or join an existing one, and your saved groups will appear here once the backend provides the data.
+      </p>
     </div>
   );
 }

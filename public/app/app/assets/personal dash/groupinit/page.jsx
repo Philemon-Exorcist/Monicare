@@ -28,6 +28,11 @@ export default function GroupInitPage() {
         if (isMounted) {
           setProfile(response?.data || null);
         }
+      } catch (error) {
+        console.error("Failed to load dashboard profile", error);
+        if (isMounted) {
+          setProfile(null);
+        }
       } finally {
         if (isMounted) {
           setIsLoadingProfile(false);

@@ -14,6 +14,7 @@ export const utilityNavItems = [
 
 export const circles = [
   {
+    id: "tech-cohort-savings",
     name: "Tech Cohort Savings",
     status: "Created",
     position: "Slot 3 of 10",
@@ -21,6 +22,7 @@ export const circles = [
     cadence: "Weekly",
   },
   {
+    id: "alumni-hub-2019",
     name: "Alumni Hub 2019",
     status: "Joined",
     position: "Slot 1 of 12",

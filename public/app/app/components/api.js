@@ -86,3 +86,11 @@ export function submitAuth(payload, mode) {
 export function getDashboardProfile(token) {
   return request("/api/v1/dashboard", "GET", {}, token);
 }
+
+export function getSavingsGroups(token) {
+  return request("/api/v1/group_saving/my_savings_groups", "GET", {}, token);
+}
+
+export async function getSavingsGroupDetail(groupId, token) {
+  return request(`/api/v1/group_saving/my_savings_groups/${encodeURIComponent(groupId)}`, "GET", {}, token);
+}
