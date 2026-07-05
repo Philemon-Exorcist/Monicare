@@ -94,7 +94,7 @@ async def create_savings_group(
         supabase_admin.table("group_members").insert({
             "group_id": group_id,
             "user_id": str(creator_uuid),
-            "slot_position": 1,
+            "slot_position": 3,
         }).execute()
 
         return {
