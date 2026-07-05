@@ -54,6 +54,123 @@ async def join_group_via_link(group_link: str, current_user=Depends(verify_user_
 
 # this assigned to a button that allows a user to join a group via the group link by pressing accept button
 
+from fastapi import APIRouter, Request, Header, HTTPException, status, Depends
+from app.supabase_client import get_supabase_admin
+
+@link_router.post("/accept_invitation", status_code=status.HTTP_200_OK)
+async def join_group_via_link(group_link: str, current_user=Depends(verify_user_token)):
+    """
+    Validates a unique link, checks capacity, and inserts a user 
+    directly into the target group membership matrix table.
+    """
+    supabase_admin = get_supabase_admin()
+    
+    # Extract structural user identification context
+    current_user_id = getattr(current_user, "id", None)
+    if not current_user_id:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="You must be signed in to join a savings group.",
+        )
+
+    # 1. Fetch group details using a single, unified string select statement
+    try:
+        group_response = (
+            supabase_admin.table("savings_groups")
+            .select("group_id, group_name, max_slots, status, contribution_amount, cycle_period")
+            .eq("group_link", group_link)
+            .maybe_single()
+            .execute()
+        )
+        group = group_response.data
+    except Exception as err:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Database communication drop fetching group states: {err}",
+        )
+
+    if not group:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No savings group found for the provided invitation link.",
+        )
+        
+    target_group_id = group["group_id"]
+
+    # 2. Check for pre-existing duplicate group memberships
+    try:
+        membership_response = (
+            supabase_admin.table("group_members")
+            .select("user_id")
+            .eq("user_id", str(current_user_id))
+            .eq("group_id", target_group_id) # FIX: Query cleanly on group_id relational keys
+            .maybe_single()
+            .execute()
+        )
+        membership = membership_response.data
+    except Exception as err:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error checking pre-existing membership constraints: {err}",
+        )
+
+    if membership:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="You are already an active member of this savings group.",
+        )
+
+    # 3. Calculate active member occupancy limits
+    try:
+        members_count_response = (
+            supabase_admin.table("group_members")
+            .select("user_id", count="exact")
+            .eq("group_id", target_group_id)
+            .execute()
+        )
+        members_count = members_count_response.count or 0
+    except Exception as err:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error counting member slots: {err}",
+        )
+
+    if members_count >= group["max_slots"]:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="This savings group has filled all available participant slots.",
+        )
+
+    # 4. EXECUTE INSERTION: Assign slot position dynamically based on current head count
+    assigned_slot_position = members_count + 1
+
+    try:
+        supabase_admin.table("group_members").insert({
+            "group_id": target_group_id,
+            "user_id": str(current_user_id),
+            "slot_position": assigned_slot_position,
+            "role": "MEMBER"
+        }).execute()
+        
+    except Exception as insert_err:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to record group member registration row: {insert_err}"
+        )
+
+    return {
+        "status": "success",
+        "message": f"Successfully joined the savings group '{group['group_name']}'!",
+        "data": {
+            "group_id": target_group_id,
+            "assigned_slot": assigned_slot_position,
+            "total_members": assigned_slot_position
+        }
+    }
+
+
+
+"""
 @link_router.post("/accept_invitation", status_code=status.HTTP_200_OK)
 async def join_group_via_link(group_link: str, current_user=Depends(verify_user_token)):
     """
@@ -141,3 +258,4 @@ async def join_group_via_link(group_link: str, current_user=Depends(verify_user_
         "message": "You can join this savings group.",
         "data": group,
     }
+"""
