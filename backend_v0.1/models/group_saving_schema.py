@@ -26,7 +26,7 @@ class SavingsGroupBase(BaseModel):
         ..., gt=0, examples=[50000.00]
     )
     cycle_period: GroupPeriodEnum = Field(..., examples=["WEEKLY"])
-    group_link: str = Field(..., examples=["https://akawo.app"])
+    #group_link: str = Field(..., examples=["https://akawo.app"])
 
 
 # 3. Payload expected from frontend when CREATING a group
