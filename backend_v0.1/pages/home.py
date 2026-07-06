@@ -47,9 +47,9 @@ async def home(current_user=Depends(verify_user_token)):
     try:
         memberships_resp = (
             supabase_admin.table("group_members")
-            .select("group_id,rotation_position,joined_at")
+            .select("group_id,slot_position,joined_at")
             .eq("user_id", str(current_user_id))
-            .order("rotation_position", desc=False)
+            .order("slot_position", desc=False)
             .execute()
         )
         memberships = memberships_resp.data or []
@@ -65,9 +65,9 @@ async def home(current_user=Depends(verify_user_token)):
             groups_resp = (
                 supabase_admin.table("savings_groups")
                 .select(
-                    "id,title,contribution_amount,cycle_period,max_slots,status,current_cycle_round,nomba_sub_account_id,creator_id,group_link,activated_at,created_at"
+                    "group_id,title,contribution_amount,cycle_period,max_slots,status,current_cycle_round,nomba_sub_account_id,creator_id,group_link,activated_at,created_at"
                 )
-                .in_("id", group_ids)
+                .in_("group_id", group_ids)
                 .execute()
             )
             groups_data = groups_resp.data or []
@@ -75,11 +75,11 @@ async def home(current_user=Depends(verify_user_token)):
             logger.error("Failed to load savings groups for %s: %s", current_user_id, err, exc_info=True)
             groups_data = []
 
-        groups_by_id = {str(g["id"]): g for g in groups_data if g.get("id")}
+        groups_by_id = {str(g["group_id"]): g for g in groups_data if g.get("group_id")}
         membership_by_group = {str(row["group_id"]): row for row in memberships if row.get("group_id")}
 
         # Preserve order by rotation_position from memberships
-        sorted_memberships = sorted(memberships, key=lambda r: (r.get("rotation_position") or 0))
+        sorted_memberships = sorted(memberships, key=lambda r: (r.get("slot_position") or 0))
         for m in sorted_memberships:
             gid = str(m.get("group_id"))
             g = groups_by_id.get(gid)
@@ -87,8 +87,8 @@ async def home(current_user=Depends(verify_user_token)):
                 continue
 
             groups.append({
-                "group_id": g.get("id"),
-                "group_name": g.get("title"),
+                "group_id": g.get("group_id"),
+                "group_name": g.get("group_name"),
                 "contribution_amount": float(g.get("contribution_amount") or 0.0),
                 "cycle_period": g.get("cycle_period"),
                 "max_slots": g.get("max_slots"),
@@ -100,7 +100,7 @@ async def home(current_user=Depends(verify_user_token)):
                 "activated_at": g.get("activated_at"),
                 "created_at": g.get("created_at"),
                 "joined_at": membership_by_group.get(gid, {}).get("joined_at"),
-                "rotation_position": membership_by_group.get(gid, {}).get("rotation_position"),
+                "slot_position": membership_by_group.get(gid, {}).get("rotation_position"),
             })
 
     return {
@@ -119,4 +119,4 @@ async def home(current_user=Depends(verify_user_token)):
 
 
 # need to add slot position and if auto debit is authorized (true) and this is for my active circles section on the home page ,
-#  add group scheduler to database, from chrome chat
+#  add group scheduler to database, from chrome chat, is the activate dependent on the cron scheduler
