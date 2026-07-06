@@ -53,7 +53,10 @@ class AppSettings(BaseSettings):
     NOMBA_LIVE_PRIVATE_KEY: str = Field(alias="NOMBA_LIVE_PRIVATE_KEY")
     Main_Account_ID: str
     NOMBA_SUB_ACCOUNT_ID: Optional[str] = None
-    NOMBA_WEBHOOK_SECRET: Optional[str] = None
+    NOMBA_WEBHOOK_SECRET: Optional[str] = Field(
+        default=None,
+        validation_alias=AliasChoices("NOMBA_WEBHOOK_SECRET", "NOMBA_SIGNATURE"),
+    )
 
     model_config = SettingsConfigDict(
         env_file=".env",

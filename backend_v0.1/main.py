@@ -11,7 +11,6 @@ import uvicorn
 from fastapi.middleware.cors import CORSMiddleware
 from pages.register import router
 from core.create_savings_group import group_router
-from core.activate_group import activate_groups_by_max_slots
 from pages.home import home_router
 from pages.my_group_saving import group_router as my_group_router
 from api.webhook import router as webhook_router
@@ -19,6 +18,7 @@ from core.join_via_link import link_router
 from core.group_endpoint import group_payment_router
 from integrations.withdraw import router as withdrawals_router
 from core.fallback_savings import router as fallback_router
+from core.cron import register_background_tasks, start_background_tasks, stop_background_tasks
 
 
 
@@ -33,6 +33,7 @@ logger = logging.getLogger("KamaraLogger")
 
 
 app = FastAPI(title="Monicare")
+register_background_tasks(app)
 
 KEEP_ALIVE_URL = os.environ.get("KEEP_ALIVE_URL", "https://monicare.onrender.com/health")
 KEEP_ALIVE_INTERVAL_SECONDS = int(os.environ.get("KEEP_ALIVE_INTERVAL_SECONDS", 600))
@@ -61,45 +62,14 @@ app.add_middleware(
 )
 
 
-async def keep_alive_loop() -> None:
-    async with httpx.AsyncClient(timeout=10.0) as client:
-        while True:
-            try:
-                response = await client.get(KEEP_ALIVE_URL)
-                logger.info("Keepalive ping %s -> %s", KEEP_ALIVE_URL, response.status_code)
-            except Exception as err:
-                logger.warning("Keepalive ping failed: %s", err)
-            await asyncio.sleep(KEEP_ALIVE_INTERVAL_SECONDS)
-
-
-async def auto_activate_loop() -> None:
-    while True:
-        try:
-            activated_ids = await activate_groups_by_max_slots()
-            if activated_ids:
-                logger.info("Auto-activated groups: %s", ", ".join(activated_ids))
-        except Exception as err:
-            logger.error("Auto-activation loop failed: %s", err, exc_info=True)
-        await asyncio.sleep(AUTO_ACTIVATE_INTERVAL_SECONDS)
-
-
 @app.on_event("startup")
 async def on_startup() -> None:
-    if ENABLE_KEEP_ALIVE:
-        logger.info("Keepalive enabled. Pinging %s every %s seconds.", KEEP_ALIVE_URL, KEEP_ALIVE_INTERVAL_SECONDS)
-        app.state.keepalive_task = asyncio.create_task(keep_alive_loop())
-
-    if ENABLE_AUTO_ACTIVATION:
-        logger.info("Auto-activation enabled. Polling every %s seconds.", AUTO_ACTIVATE_INTERVAL_SECONDS)
-        app.state.auto_activate_task = asyncio.create_task(auto_activate_loop())
+    await start_background_tasks(app)
 
 
 @app.on_event("shutdown")
 async def on_shutdown() -> None:
-    for task_name in ("keepalive_task", "auto_activate_task"):
-        task = getattr(app.state, task_name, None)
-        if task is not None:
-            task.cancel()
+    await stop_background_tasks(app)
 
 
 @app.exception_handler(RequestValidationError)

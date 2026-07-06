@@ -51,7 +51,7 @@ async def create_savings_group(
 
     group_row = {
         "creator_id": str(creator_uuid),
-        "title": payload.group_name.strip(),
+        "group_name": payload.group_name.strip(),
         "contribution_amount": str(payload.contribution_amount),
         "cycle_period": payload.cycle_period.value,
         "max_slots": payload.max_slots,

@@ -89,3 +89,21 @@ CREATE TABLE group_contributions (
     amount NUMERIC(15, 2) NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
+
+
+
+
+
+
+-- â”€â”€â”€ STEP 7: CREATE THE GROUP PAYMENT SCHEDULE TABLE â”€â”€â”€
+CREATE TABLE group_schedules (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    group_id UUID REFERENCES savings_groups(id) ON DELETE CASCADE NOT NULL,
+    user_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
+    amount_due NUMERIC(15, 2) NOT NULL,
+    payment_status TEXT NOT NULL DEFAULT 'PENDING',
+    cycle_round INT NOT NULL,
+    due_at TIMESTAMP WITH TIME ZONE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
