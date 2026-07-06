@@ -32,6 +32,6 @@ export const circles = [
 ];
 
 export const contributions = [
-  { date: "01 Jul 2026", circle: "Tech Cohort Savings", amount: "N50,000", status: "Joined circle" },
-  { date: "24 Jun 2026", circle: "Alumni Hub 2019", amount: "N30,000", status: "Created circle" },
+  { date: "01 Jul 2026", circleId: "tech-cohort-savings", amount: "N50,000", status: "Joined circle" },
+  { date: "24 Jun 2026", circleId: "alumni-hub-2019", amount: "N30,000", status: "Created circle" },
 ];
