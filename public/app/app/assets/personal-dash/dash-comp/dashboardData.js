@@ -1,14 +1,14 @@
 ﻿import { BellIcon, ChatIcon, GridIcon, SettingsIcon, UsersIcon, LogoutIcon } from "./icons";
 
 export const navItems = [
-  { label: "Personal Dashboard", icon: GridIcon, href: "/assets/personal%20dash" },
-  { label: "My Savings Circles", icon: UsersIcon, href: "/assets/personal%20dash/my-circle" },
-  { label: "Notifications", icon: BellIcon, href: "/assets/personal%20dash/notifications" },
-  { label: "Help & Community Hub", icon: ChatIcon, href: "/assets/personal%20dash/community" },
+  { label: "Personal Dashboard", icon: GridIcon, href: "/assets/personal-dash" },
+  { label: "My Savings Circles", icon: UsersIcon, href: "/assets/personal-dash/my-circle" },
+  { label: "Notifications", icon: BellIcon, href: "/assets/personal-dash/notifications" },
+  { label: "Help & Community Hub", icon: ChatIcon, href: "/assets/personal-dash/community" },
 ];
 
 export const utilityNavItems = [
-  { label: "Account Settings", icon: SettingsIcon, href: "/assets/personal%20dash/settings" },
+  { label: "Account Settings", icon: SettingsIcon, href: "/assets/personal-dash/settings" },
   { label: "Log Out", icon: LogoutIcon },
 ];
 
