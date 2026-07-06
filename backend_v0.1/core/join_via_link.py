@@ -153,7 +153,7 @@ async def accept_group_invitation(group_link: str, current_user=Depends(verify_u
 
     return {
         "status": "success",
-        "message": f"Successfully joined the savings group '{group['title']}'!",
+        "message": f"Successfully joined the savings group '{group['group_name']}'!",
         "data": {
             "group_id": target_group_id,
             "assigned_rotation_position": assigned_rotation_position,
