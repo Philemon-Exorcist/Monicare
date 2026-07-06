@@ -83,7 +83,7 @@ async def create_savings_group(
 
         group_link = generate_group_link(str(group_id))
         try:
-            supabase_admin.table("savings_groups").update({"group_link": group_link}).eq("id", group_id).execute()
+            supabase_admin.table("savings_groups").update({"group_link": group_link}).eq("group_id", group_id).execute()
         except Exception as err:
             logger.error("Failed to persist group link for %s: %s", group_id, err, exc_info=True)
             raise HTTPException(

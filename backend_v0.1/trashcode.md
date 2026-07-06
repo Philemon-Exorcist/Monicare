@@ -730,3 +730,63 @@ GET /v1/transactions/accounts/{subAccountId} - reconcile inflows · GET /v1/tran
             except httpx.HTTPStatusError as http_err:
                 raise Exception(f"Nomba Bank Lookup Layer Error: {http_err.response.text}")
 
+
+
+026-07-06 04:58:23 - [INFO] - HTTP Request: GET https://sxoaifgvldxcvoeyoezj.supabase.co/auth/v1/user "HTTP/2 200 OK"
+2026-07-06 04:58:23 - [INFO] - User fb727973-b851-41b6-8c4c-76b1e27de041 accessed the home endpoint.
+2026-07-06 04:58:24 - [INFO] - HTTP Request: GET https://sxoaifgvldxcvoeyoezj.supabase.co/rest/v1/profiles?select=first_name%2Clast_name%2Cnomba_bank_name%2Cnomba_virtual_account%2Cwallet_balance&id=eq.fb727973-b851-41b6-8c4c-76b1e27de041 "HTTP/2 200 OK"
+2026-07-06 04:58:24 - [INFO] - HTTP Request: GET https://sxoaifgvldxcvoeyoezj.supabase.co/rest/v1/group_members?select=group_id%2Crotation_position%2Cjoined_at&user_id=eq.fb727973-b851-41b6-8c4c-76b1e27de041&order=rotation_position.asc "HTTP/2 400 Bad Request"
+2026-07-06 04:58:24 - [ERROR] - Failed to load group memberships for fb727973-b851-41b6-8c4c-76b1e27de041: {'message': 'column group_members.rotation_position does not exist', 'code': '42703', 'hint': None, 'details': None}
+Traceback (most recent call last):
+  File "/opt/render/project/src/backend_v0.1/pages/home.py", line 53, in home
+    .execute()
+     ~~~~~~~^^
+  File "/opt/render/project/src/backend_v0.1/.venv/lib/python3.14/site-packages/postgrest/_sync/request_builder.py", line 96, in execute
+    raise APIError(dict(json_obj))
+postgrest.exceptions.APIError: {'message': 'column group_members.rotation_position does not exist', 'code': '42703', 'hint': None, 'details': None}
+2026-07-06 04:58:24 - [INFO] - ✅ COMPLETED REQUEST: GET -> /api/v1/dashboard | Status: 200 | Time: 519.01ms
+INFO:     102.90.103.181:0 - "GET /api/v1/dashboard HTTP/1.1" 200 OK
+2026-07-06 04:58:55 - [INFO] - HTTP Request: GET https://sxoaifgvldxcvoeyoezj.supabase.co/rest/v1/savings_groups?select=id%2Cstatus%2Cmax_slots&status=eq.DRAFT "HTTP/2 400 Bad Request"
+2026-07-06 04:58:55 - [ERROR] - Failed to load draft groups for auto-activation: {'message': 'column savings_groups.id does not exist', 'code': '42703', 'hint': None, 'details': None}
+Traceback (most recent call last):
+  File "/opt/render/project/src/backend_v0.1/core/activate_group.py", line 85, in activate_groups_by_max_slots
+    .execute()
+     ~~~~~~~^^
+  File "/opt/render/project/src/backend_v0.1/.venv/lib/python3.14/site-packages/postgrest/_sync/request_builder.py", line 96, in execute
+    raise APIError(dict(json_obj))
+postgrest.exceptions.APIError: {'message': 'column savings_groups.id does not exist', 'code': '42703', 'hint': None, 'details': None}
+2026-07-06 05:00:35 - [INFO] - 🚀 INCOMING REQUEST: POST -> /api/v1/login
+2026-07-06 05:00:35 - [INFO] - HTTP Request: GET https://sxoaifgvldxcvoeyoezj.supabase.co/rest/v1/profiles?select=email&phone_no=eq.09067860967&limit=1 "HTTP/2 200 OK"
+2026-07-06 05:00:36 - [INFO] - HTTP Request: POST https://sxoaifgvldxcvoeyoezj.supabase.co/auth/v1/token?grant_type=password "HTTP/2 200 OK"
+2026-07-06 05:00:36 - [INFO] - User dc0d2e0a-196c-4a60-91a9-15c9c3994e28 successfully validated session access.
+2026-07-06 05:00:36 - [INFO] - ✅ COMPLETED REQUEST: POST -> /api/v1/login | Status: 200 | Time: 828.08ms
+INFO:     102.90.103.181:0 - "POST /api/v1/login HTTP/1.1" 200 OK
+2026-07-06 05:01:46 - [INFO] - 🚀 INCOMING REQUEST: POST -> /api/v1/create_savings_group
+2026-07-06 05:01:46 - [INFO] - HTTP Request: GET https://sxoaifgvldxcvoeyoezj.supabase.co/auth/v1/user "HTTP/2 200 OK"
+2026-07-06 05:01:46 - [INFO] - HTTP Request: POST https://sxoaifgvldxcvoeyoezj.supabase.co/rest/v1/savings_groups?select=%2A "HTTP/2 400 Bad Request"
+2026-07-06 05:01:46 - [ERROR] - Failed to create savings group: {'message': "Could not find the 'title' column of 'savings_groups' in the schema cache", 'code': 'PGRST204', 'hint': None, 'details': None}
+Traceback (most recent call last):
+  File "/opt/render/project/src/backend_v0.1/core/create_savings_group.py", line 68, in create_savings_group
+    .execute()
+     ~~~~~~~^^
+  File "/opt/render/project/src/backend_v0.1/.venv/lib/python3.14/site-packages/postgrest/_sync/request_builder.py", line 96, in execute
+    raise APIError(dict(json_obj))
+postgrest.exceptions.APIError: {'message': "Could not find the 'title' column of 'savings_groups' in the schema cache", 'code': 'PGRST204', 'hint': None, 'details': None}
+2026-07-06 05:01:46 - [INFO] - ✅ COMPLETED REQUEST: POST -> /api/v1/create_savings_group | Status: 500 | Time: 600.94ms
+INFO:     102.90.103.181:0 - "POST /api/v1/create_savings_group HTTP/1.1" 500 Internal Server Error
+2026-07-06 05:02:40 - [INFO] - 🚀 INCOMING REQUEST: GET -> /health
+2026-07-06 05:02:40 - [INFO] - ✅ COMPLETED REQUEST: GET -> /health | Status: 200 | Time: 0.63ms
+INFO:     74.220.51.133:0 - "GET /health HTTP/1.1" 200 OK
+2026-07-06 05:02:40 - [INFO] - HTTP Request: GET https://monicare.onrender.com/health "HTTP/1.1 200 OK"
+2026-07-06 05:02:40 - [INFO] - Keepalive ping https://monicare.onrender.com/health -> 200
+2026-07-06 05:03:55 - [INFO] - HTTP Request: GET https://sxoaifgvldxcvoeyoezj.supabase.co/rest/v1/savings_groups?select=id%2Cstatus%2Cmax_slots&status=eq.DRAFT "HTTP/2 400 Bad Request"
+2026-07-06 05:03:55 - [ERROR] - Failed to load draft groups for auto-activation: {'message': 'column savings_groups.id does not exist', 'code': '42703', 'hint': None, 'details': None}
+Traceback (most recent call last):
+  File "/opt/render/project/src/backend_v0.1/core/activate_group.py", line 85, in activate_groups_by_max_slots
+    .execute()
+     ~~~~~~~^^
+  File "/opt/render/project/src/backend_v0.1/.venv/lib/python3.14/site-packages/postgrest/_sync/request_builder.py", line 96, in execute
+    raise APIError(dict(json_obj))
+postgrest.exceptions.APIError: {'message': 'column savings_groups.id does not exist', 'code': '42703', 'hint': None, 'details': None}
+2026-07-06 05:07:22 - [INFO] - 🚀 INCOMING REQUEST: GET -> /health
+2026-07-06 05:07:22 - [INFO] - ✅ COMPLETED REQUEST: GET -> /health | Status: 200 | Time: 0.60ms
