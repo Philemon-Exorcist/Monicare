@@ -75,7 +75,7 @@ async def accept_group_invitation(group_link: str, current_user=Depends(verify_u
     try:
         group_response = (
             supabase_admin.table("savings_groups")
-            .select("id, title, max_slots, status, contribution_amount, cycle_period")
+            .select("group_id, title, max_slots, status, contribution_amount, cycle_period")
             .eq("group_link", group_link)
             .maybe_single()
             .execute()
