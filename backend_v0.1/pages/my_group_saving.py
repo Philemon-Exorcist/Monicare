@@ -93,7 +93,7 @@ async def get_savings_groups(current_user=Depends(verify_user_token)):
                 "activated_at": group.get("activated_at"),
                 "created_at": group.get("created_at"),
                 "joined_at": membership.get("joined_at") if membership else None,
-                "rotation_position": membership.get("rotation_position") if membership else None,
+                "slot_position": membership.get("rotation_position") if membership else None,
             })
 
         return {

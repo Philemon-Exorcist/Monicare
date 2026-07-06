@@ -129,6 +129,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
         },
     )
 
+# ping to keep my server alive
 
 @app.middleware("http")
 async def log_incoming_requests(request: Request, call_next):
