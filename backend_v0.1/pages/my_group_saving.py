@@ -64,12 +64,12 @@ async def get_savings_groups(current_user=Depends(verify_user_token)):
             .select(
                 "group_id,group_name,contribution_amount,cycle_period,max_slots,status,current_cycle_round,nomba_sub_account_id,creator_id,group_link,activated_at,created_at"
             )
-            .in_("id", group_ids)
+            .in_("group_id", group_ids)
             .execute()
         )
         groups = groups_response.data or []
 
-        groups_by_id = {str(group["id"]): group for group in groups if group.get("id")}
+        groups_by_id = {str(group["group_id"]): group for group in groups if group.get("group_id")}
         membership_by_group = {str(row["group_id"]): row for row in memberships if row.get("group_id")}
 
         result = []
