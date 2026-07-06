@@ -118,4 +118,5 @@ async def home(current_user=Depends(verify_user_token)):
     }
 
 
-# need to add slot position and if auto debit is authorized (true) and this is for my active circles section on the home page
+# need to add slot position and if auto debit is authorized (true) and this is for my active circles section on the home page ,
+#  add group scheduler to database, from chrome chat

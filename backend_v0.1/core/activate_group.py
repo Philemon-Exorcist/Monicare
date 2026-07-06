@@ -90,7 +90,7 @@ async def activate_groups_by_max_slots() -> list[str]:
         return activated_group_ids
 
     for group in draft_groups:
-        group_id = group.get("id")
+        group_id = group.get("group_id")
         if not group_id:
             continue
 
