@@ -75,7 +75,7 @@ async def accept_group_invitation(group_link: str, current_user=Depends(verify_u
     try:
         group_response = (
             supabase_admin.table("savings_groups")
-            .select("group_id, title, max_slots, status, contribution_amount, cycle_period")
+            .select("group_id, group_name, max_slots, status, contribution_amount, cycle_period")
             .eq("group_link", group_link)
             .maybe_single()
             .execute()
@@ -143,7 +143,7 @@ async def accept_group_invitation(group_link: str, current_user=Depends(verify_u
         supabase_admin.table("group_members").insert({
             "group_id": target_group_id,
             "user_id": str(current_user_id),
-            "rotation_position": assigned_rotation_position,
+            "slot_position": assigned_rotation_position,
         }).execute()
     except Exception as insert_err:
         raise HTTPException(
