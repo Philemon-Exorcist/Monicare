@@ -37,7 +37,7 @@ async def get_savings_groups(current_user=Depends(verify_user_token)):
     try:
         memberships_response = (
             supabase_admin.table("group_members")
-            .select("group_id,rotation_position,joined_at")
+            .select("group_id,slot_position,joined_at")
             .eq("user_id", str(user_uuid))
             .order("joined_at", desc=False)
             .execute()
