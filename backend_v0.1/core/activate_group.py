@@ -25,7 +25,7 @@ async def activate_group_by_button(group_id: str, creator_id: str) -> dict:
     try:
         group_response = (
             supabase_admin.table("savings_groups")
-            .select("id,creator_id,status,max_slots")
+            .select("group_id,creator_id,status,max_slots")
             .eq("id", group_id)
             .maybe_single()
             .execute()
@@ -80,7 +80,7 @@ async def activate_groups_by_max_slots() -> list[str]:
     try:
         groups_response = (
             supabase_admin.table("savings_groups")
-            .select("id,status,max_slots")
+            .select("group_id,status,max_slots")
             .eq("status", "DRAFT")
             .execute()
         )

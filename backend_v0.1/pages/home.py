@@ -118,4 +118,4 @@ async def home(current_user=Depends(verify_user_token)):
     }
 
 
-# need to add slot position
+# need to add slot position and if auto debit is authorized (true) and this is for my active circles section on the home page
