@@ -92,5 +92,13 @@ export function getSavingsGroups(token) {
 }
 
 export async function getSavingsGroupDetail(groupId, token) {
-  return request(`/api/v1/group_saving/my_savings_groups/${encodeURIComponent(groupId)}`, "GET", {}, token);
+  const response = await getSavingsGroups(token);
+  const groups = Array.isArray(response?.data) ? response.data : [];
+  const match = groups.find((group) => String(group?.group_id || group?.id) === String(groupId));
+
+  return {
+    status: "success",
+    message: match ? "Savings group retrieved successfully." : "Savings group not found.",
+    data: match || null,
+  };
 }

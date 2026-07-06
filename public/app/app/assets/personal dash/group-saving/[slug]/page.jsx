@@ -34,6 +34,24 @@ const DEFAULT_GROUP = {
   ],
 };
 
+function normalizeGroupData(rawGroup) {
+  const source = rawGroup || {};
+  const amountValue = Number(source.contribution_amount ?? source.amount ?? 0);
+  const totalSlots = Number(source.max_slots ?? DEFAULT_GROUP.total ?? 10) || DEFAULT_GROUP.total;
+  const currentRound = Number(source.current_cycle_round ?? source.progress ?? DEFAULT_GROUP.progress) || DEFAULT_GROUP.progress;
+
+  return {
+    ...DEFAULT_GROUP,
+    id: source.group_id || source.id || DEFAULT_GROUP.id,
+    title: source.group_name || source.title || DEFAULT_GROUP.title,
+    target: Number.isFinite(amountValue) && amountValue > 0 ? `N${amountValue.toLocaleString("en-NG", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}` : DEFAULT_GROUP.target,
+    recipient: source.recipient || source.title || DEFAULT_GROUP.recipient,
+    status: source.status || DEFAULT_GROUP.status,
+    progress: currentRound,
+    total: totalSlots,
+  };
+}
+
 export default function GroupSavingDetailPage() {
   const params = useParams();
   const groupId = params?.slug || "tech-cohort-savings";
@@ -50,16 +68,16 @@ export default function GroupSavingDetailPage() {
         window.sessionStorage.getItem("monicare_access_token");
 
       if (!token) {
-        setGroupData(DEFAULT_GROUP.id === groupId ? DEFAULT_GROUP : { ...DEFAULT_GROUP, id: groupId, title: groupId.replace(/-/g, " ") });
+        setGroupData(DEFAULT_GROUP.id === groupId ? DEFAULT_GROUP : normalizeGroupData({ id: groupId, title: groupId.replace(/-/g, " ") }));
         return;
       }
 
       try {
         const response = await getSavingsGroupDetail(groupId, token);
-        setGroupData(response?.data || DEFAULT_GROUP);
+        setGroupData(normalizeGroupData(response?.data));
       } catch (error) {
         console.error("Failed to load group detail", error);
-        setGroupData(DEFAULT_GROUP.id === groupId ? DEFAULT_GROUP : { ...DEFAULT_GROUP, id: groupId, title: groupId.replace(/-/g, " ") });
+        setGroupData(DEFAULT_GROUP.id === groupId ? DEFAULT_GROUP : normalizeGroupData({ id: groupId, title: groupId.replace(/-/g, " ") }));
       }
     }
 
