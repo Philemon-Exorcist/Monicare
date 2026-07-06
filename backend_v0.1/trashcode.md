@@ -790,3 +790,16 @@ Traceback (most recent call last):
 postgrest.exceptions.APIError: {'message': 'column savings_groups.id does not exist', 'code': '42703', 'hint': None, 'details': None}
 2026-07-06 05:07:22 - [INFO] - 🚀 INCOMING REQUEST: GET -> /health
 2026-07-06 05:07:22 - [INFO] - ✅ COMPLETED REQUEST: GET -> /health | Status: 200 | Time: 0.60ms
+
+
+
+2026-07-06 05:12:22 - [ERROR] - Failed to load draft groups for auto-activation: {'message': 'column savings_groups.id does not exist', 'code': '42703', 'hint': None, 'details': None}
+Traceback (most recent call last):
+  File "/opt/render/project/src/backend_v0.1/core/activate_group.py", line 85, in activate_groups_by_max_slots
+    .execute()
+     ~~~~~~~^^
+  File "/opt/render/project/src/backend_v0.1/.venv/lib/python3.14/site-packages/postgrest/_sync/request_builder.py", line 96, in execute
+    raise APIError(dict(json_obj))
+postgrest.exceptions.APIError: {'message': 'column savings_groups.id does not exist', 'code': '42703', 'hint': None, 'details': None}
+2026-07-06 05:12:22 - [INFO] - HTTP Request: GET https://sxoaifgvldxcvoeyoezj.supabase.co/rest/v1/group_schedules?select=id%2Cgroup_id%2Cuser_id%2Camount_due%2Cpayment_status%2Ccycle_round&payment_status=in.%28PENDING%2CDUE%2COVERDUE%29 "HTTP/2 404 Not Found"
+2026-07-06 05:12:22 - [INFO] - group_schedules not ready or query failed; skipping cron collection: {'message': "Could not find the table 'public.group_schedules' in the schema cache", 'code': 'PGRST205', 'hint': "Perhaps you meant the table 'public.group_members'", 'details': None}
