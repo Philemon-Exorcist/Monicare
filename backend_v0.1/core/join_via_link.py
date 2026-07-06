@@ -93,7 +93,7 @@ async def accept_group_invitation(group_link: str, current_user=Depends(verify_u
             detail="No savings group found for the provided invitation link.",
         )
 
-    target_group_id = group["id"]
+    target_group_id = group["group_id"]
 
     try:
         membership_response = (
