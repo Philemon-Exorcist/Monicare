@@ -1,3 +1,5 @@
+"use client";
+
 import { CopyIcon } from "./icons";
 import { useState, useEffect } from "react";
 
