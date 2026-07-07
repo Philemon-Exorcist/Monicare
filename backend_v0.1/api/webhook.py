@@ -73,7 +73,7 @@ async def handle_nomba_webhook(
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Signature missing.")
 
     # 1. Verify the signature
-    is_valid = await verify_nomba_signature(request, nomba_signature, nomba_timestamp)
+    is_valid = await verify_nomba_signature(request, nomba_signature, nomba_timestamp or "")
     if not is_valid:
         logger.error("Received webhook with an invalid signature.")
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid signature.")
@@ -89,7 +89,8 @@ async def handle_nomba_webhook(
     transaction = payload.data.transaction
     merchant = payload.data.merchant
 
-    event_name = payload.event_type
+    event_name = (payload.event_type or "").strip()
+    normalized_event_name = event_name.lower().replace("_", ".").replace("-", ".")
     transaction_status = (transaction.type or transaction.response_code or "").upper()
     transaction_amount = transaction.transaction_amount
     account_ref = (
@@ -104,7 +105,27 @@ async def handle_nomba_webhook(
         or account_ref
     )
 
-    if event_name not in {"payment.success", "payment_succeeded", "payment_completed"} and transaction_status not in {"SUCCESS", "00"}:
+    logger.info(
+        "Webhook payload normalized: event=%s normalized=%s status=%s amount=%s account_ref=%s transaction_ref=%s",
+        event_name,
+        normalized_event_name,
+        transaction_status,
+        transaction_amount,
+        account_ref,
+        transaction_ref,
+    )
+
+    is_payment_success_event = normalized_event_name in {
+        "payment.success",
+        "payment.succeeded",
+        "payment.completed",
+        "payment.successful",
+    } or (
+        "payment" in normalized_event_name and "success" in normalized_event_name
+    )
+    is_success_status = transaction_status in {"SUCCESS", "00"}
+
+    if not is_payment_success_event and not is_success_status:
         logger.info("Skipping non-successful payment event: %s", event_name)
         return {"status": "success", "message": "Event received but not processed."}
 

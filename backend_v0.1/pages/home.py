@@ -94,7 +94,8 @@ async def home(current_user=Depends(verify_user_token)):
 
             groups.append({
                 "group_id": g.get("group_id"),
-                "group_name": g.get("group_name"),
+                "group_name": g.get("title"),
+                "title": g.get("title"),
                 "contribution_amount": float(g.get("contribution_amount") or 0.0),
                 "cycle_period": g.get("cycle_period"),
                 "max_slots": g.get("max_slots"),
@@ -106,7 +107,7 @@ async def home(current_user=Depends(verify_user_token)):
                 "activated_at": g.get("activated_at"),
                 "created_at": g.get("created_at"),
                 "joined_at": membership_by_group.get(gid, {}).get("joined_at"),
-                "slot_position": membership_by_group.get(gid, {}).get("rotation_position"),
+                "slot_position": membership_by_group.get(gid, {}).get("slot_position"),
             })
 
     return {

@@ -81,7 +81,8 @@ async def get_savings_groups(current_user=Depends(verify_user_token)):
 
             result.append({
                 "group_id": group.get("group_id"),
-                "group_name": group.get("group_name"),
+                "group_name": group.get("title"),
+                "title": group.get("title"),
                 "contribution_amount": group.get("contribution_amount"),
                 "cycle_period": group.get("cycle_period"),
                 "max_slots": group.get("max_slots"),
@@ -93,7 +94,7 @@ async def get_savings_groups(current_user=Depends(verify_user_token)):
                 "activated_at": group.get("activated_at"),
                 "created_at": group.get("created_at"),
                 "joined_at": membership.get("joined_at") if membership else None,
-                "slot_position": membership.get("rotation_position") if membership else None,
+                "slot_position": membership.get("slot_position") if membership else None,
             })
 
         return {
