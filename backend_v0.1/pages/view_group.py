@@ -12,7 +12,7 @@ logger = logging.getLogger("Monicare.view_group")
 
 view_router = APIRouter(prefix="/api/v1/group", tags=["Group Saving"])
 
-@view_router.get("/{group_id}", status_code=status.HTTP_200_OK)
+@view_router.get("/", status_code=status.HTTP_200_OK)
 async def view_group_details(group_id: str, current_user=Depends(verify_user_token)) -> dict:
     """
     Retrieves all details for a group, including members, payout recipient, members who have paid, and members yet to be paid.
