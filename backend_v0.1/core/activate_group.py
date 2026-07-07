@@ -53,9 +53,22 @@ async def _create_initial_group_schedule(group_id: str, supabase_admin) -> None:
         # 4. Prepare schedule entries for the first round
         amount_due = group["contribution_amount"]
         current_round = group["current_cycle_round"]
+        cycle_period = group["cycle_period"]
+        activated_at_str = group.get("activated_at")
+
+        # Calculate the first due date based on the cycle period
+        due_at = datetime.utcnow() # Default to now
+        if activated_at_str:
+            activated_date = datetime.fromisoformat(activated_at_str.replace("Z", "+00:00"))
+            if cycle_period == "WEEKLY":
+                due_at = activated_date + timedelta(weeks=1)
+            elif cycle_period == "BI_WEEKLY":
+                due_at = activated_date + timedelta(weeks=2)
+            elif cycle_period == "MONTHLY":
+                due_at = activated_date + timedelta(days=30) # Approximation for a month
         
         schedule_entries = [
-            {"group_id": group_id, "user_id": member["user_id"], "amount_due": amount_due, "cycle_round": current_round}
+            {"group_id": group_id, "user_id": member["user_id"], "amount_due": amount_due, "cycle_round": current_round, "due_at": due_at.isoformat()}
             for member in members
         ]
 

@@ -81,7 +81,7 @@ async def collect_due_group_contributions_once() -> list[str]:
 
         existing_txn = (
             supabase_admin.table("wallet_transactions")
-            .select("id")
+            .select("nomba_transaction_ref")
             .eq("nomba_transaction_ref", payout_ref)
             .execute()
         )
@@ -136,9 +136,8 @@ async def collect_due_group_contributions_once() -> list[str]:
             supabase_admin.table("wallet_transactions").insert({
                 "user_id": str(user_id),
                 "amount": amount_due,
-                "type": "DEBIT_TO_GROUP",
-                "status": "SUCCESS",
                 "nomba_transaction_ref": payout_ref,
+                "reference": f"Auto-contribution for group {group_id}",
             }).execute()
 
             supabase_admin.table("group_schedules").update({

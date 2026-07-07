@@ -143,9 +143,8 @@ async def execute_group_contribution(user_uuid: str, payload: ManualFallbackCont
         supabase_admin.table("wallet_transactions").insert({
             "user_id": user_uuid,
             "amount": contribution_amount,
-            "type": "DEBIT_TO_GROUP",
-            "status": "SUCCESS",
             "nomba_transaction_ref": deterministic_txn_ref,
+            "reference": f"Manual contribution for group {group_id_str}",
         }).execute()
 
         # Step 5: Mark the schedule as PAID
