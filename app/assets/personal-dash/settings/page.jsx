@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getDashboardProfile } from "../../../components/api";
+import { getDashboardProfile, setAutoDebitPreference } from "../../../components/api";
 import Sidebar from "../dash-comp/Sidebar";
 
 export default function SettingsPage() {
@@ -9,6 +9,9 @@ export default function SettingsPage() {
   const [profile, setProfile] = useState(null);
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
   const [error, setError] = useState("");
+  const [autoDebitEnabled, setAutoDebitEnabled] = useState(false);
+  const [isSavingAutoDebit, setIsSavingAutoDebit] = useState(false);
+  const [autoDebitMessage, setAutoDebitMessage] = useState("");
 
   useEffect(() => {
     const token =
@@ -28,6 +31,7 @@ export default function SettingsPage() {
         const response = await getDashboardProfile(token);
         if (isMounted) {
           setProfile(response?.data || null);
+          setAutoDebitEnabled(Boolean(response?.data?.auto_debit_enabled));
         }
       } catch (err) {
         if (isMounted) {
@@ -46,6 +50,30 @@ export default function SettingsPage() {
       isMounted = false;
     };
   }, []);
+
+  const handleToggleAutoDebit = async () => {
+    const token =
+      window.localStorage.getItem("monicare_access_token") ||
+      window.sessionStorage.getItem("monicare_access_token");
+
+    if (!token || isSavingAutoDebit) {
+      return;
+    }
+
+    const nextValue = !autoDebitEnabled;
+    setIsSavingAutoDebit(true);
+    setAutoDebitMessage("");
+
+    try {
+      const response = await setAutoDebitPreference(nextValue, token);
+      setAutoDebitEnabled(Boolean(response?.data?.auto_debit_enabled ?? nextValue));
+      setAutoDebitMessage(nextValue ? "Auto debit is now enabled." : "Auto debit is now disabled.");
+    } catch (err) {
+      setAutoDebitMessage(err?.message || "Unable to update auto debit right now.");
+    } finally {
+      setIsSavingAutoDebit(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-white text-black">
@@ -96,7 +124,37 @@ export default function SettingsPage() {
                 {error}
               </div>
             ) : (
-              <div className="mt-10 grid gap-6 sm:grid-cols-2">
+              <div className="mt-10 space-y-6">
+                <div className="rounded-3xl border border-neutral-200 bg-[#fafafa] p-6">
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <p className="text-sm uppercase tracking-[0.35em] text-neutral-400">Auto debit</p>
+                      <p className="mt-3 text-lg font-black text-black">Debit from virtual account</p>
+                      <p className="mt-2 max-w-2xl text-sm leading-6 text-neutral-500">
+                        When enabled, Monicare can automatically collect your contribution from your virtual account whenever a payment is due.
+                      </p>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={handleToggleAutoDebit}
+                      disabled={isSavingAutoDebit}
+                      className={`inline-flex h-12 min-w-[170px] items-center justify-center rounded-full px-5 text-sm font-black transition ${
+                        autoDebitEnabled
+                          ? "bg-emerald-600 text-white hover:bg-emerald-500"
+                          : "bg-neutral-200 text-black hover:bg-neutral-300"
+                      } ${isSavingAutoDebit ? "cursor-not-allowed opacity-70" : ""}`}
+                    >
+                      {isSavingAutoDebit ? "Saving..." : autoDebitEnabled ? "Auto Debit ON" : "Auto Debit OFF"}
+                    </button>
+                  </div>
+
+                  {autoDebitMessage ? (
+                    <p className="mt-4 text-sm font-medium text-neutral-600">{autoDebitMessage}</p>
+                  ) : null}
+                </div>
+
+                <div className="grid gap-6 sm:grid-cols-2">
                 <div className="rounded-3xl border border-neutral-200 bg-[#fafafa] p-6">
                   <p className="text-sm uppercase tracking-[0.35em] text-neutral-400">Name</p>
                   <p className="mt-3 text-lg font-black text-black">{profile?.first_name} {profile?.last_name}</p>
@@ -113,6 +171,7 @@ export default function SettingsPage() {
                   <p className="text-sm uppercase tracking-[0.35em] text-neutral-400">Member since</p>
                   <p className="mt-3 text-lg font-black text-black">{profile?.created_at ? new Date(profile.created_at).toLocaleDateString() : "Unknown"}</p>
                 </div>
+              </div>
               </div>
             )}
           </section>

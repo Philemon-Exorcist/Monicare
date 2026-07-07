@@ -1,12 +1,17 @@
 import logging
 
-from fastapi import APIRouter, Depends, status
+from pydantic import BaseModel, Field
+from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.auth import verify_user_token
 from app.supabase_client import get_supabase_admin
 
 home_router = APIRouter(prefix="/api/v1", tags=["Home"])
 logger = logging.getLogger("Monicare.home")
+
+
+class AutoDebitPreference(BaseModel):
+    enabled: bool = Field(..., description="Whether auto debit from the virtual account is enabled.")
 
 
 @home_router.get("/dashboard", status_code=status.HTTP_200_OK)
@@ -26,7 +31,7 @@ async def home(current_user=Depends(verify_user_token)):
     try:
         profile_response = (
             supabase_admin.table("profiles")
-            .select("first_name,last_name,nomba_bank_name,nomba_virtual_account,wallet_balance")
+            .select("first_name,last_name,nomba_bank_name,nomba_virtual_account,wallet_balance,auto_debit_enabled")
             .eq("id", current_user_id)
             .maybe_single()
             .execute()
@@ -42,6 +47,7 @@ async def home(current_user=Depends(verify_user_token)):
     bank_name = profile.get("nomba_bank_name") or "UNKNOWN"
     account_number = profile.get("nomba_virtual_account") or "UNKNOWN"
     wallet_balance = float(profile.get("wallet_balance") or 0.0)
+    auto_debit_enabled = bool(profile.get("auto_debit_enabled") or False)
 
     # Fetch groups the user belongs to, ordered by rotation_position
     try:
@@ -113,7 +119,48 @@ async def home(current_user=Depends(verify_user_token)):
             "bank_name": bank_name,
             "account_number": account_number,
             "wallet_balance": wallet_balance,
+            "auto_debit_enabled": auto_debit_enabled,
             "groups": groups,
+        },
+    }
+
+
+@home_router.patch("/profile/auto-debit", status_code=status.HTTP_200_OK)
+async def set_auto_debit_preference(
+    payload: AutoDebitPreference,
+    current_user=Depends(verify_user_token),
+):
+    current_user_id = getattr(current_user, "id", None)
+
+    if not current_user_id:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Missing user identity.",
+        )
+
+    supabase_admin = get_supabase_admin()
+
+    try:
+        response = (
+            supabase_admin.table("profiles")
+            .update({"auto_debit_enabled": payload.enabled})
+            .eq("id", current_user_id)
+            .select("auto_debit_enabled")
+            .execute()
+        )
+        updated = (response.data or [{}])[0]
+    except Exception as err:
+        logger.error("Failed to update auto debit preference for %s: %s", current_user_id, err, exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Unable to update auto debit preference right now.",
+        )
+
+    return {
+        "status": "success",
+        "message": f"Auto debit has been {'enabled' if payload.enabled else 'disabled'}.",
+        "data": {
+            "auto_debit_enabled": bool(updated.get("auto_debit_enabled") if isinstance(updated, dict) else payload.enabled),
         },
     }
 

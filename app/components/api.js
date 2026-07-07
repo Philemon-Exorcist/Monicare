@@ -91,6 +91,34 @@ export function getSavingsGroups(token) {
   return request("/api/v1/group_saving/my_savings_groups", "GET", {}, token);
 }
 
+export function createSavingsGroup(payload, token) {
+  return request("/api/v1/create_savings_group", "POST", payload, token);
+}
+
+export function activateSavingsGroup(payload, token) {
+  return request("/api/v1/activate_group", "POST", payload, token);
+}
+
+export function joinGroupViaLink(groupLink, token) {
+  return request(`/api/v1/group_saving/join_via_link?group_link=${encodeURIComponent(groupLink)}`, "GET", {}, token);
+}
+
+export function acceptGroupInvitation(groupLink, token) {
+  return request("/api/v1/group_saving/accept_invitation", "POST", { group_link: groupLink }, token);
+}
+
+export function submitWithdrawal(payload, token) {
+  return request("/api/v1/withdrawals/verify-and-proceed", "POST", payload, token);
+}
+
+export function getAutoDebitPreference(token) {
+  return request("/api/v1/dashboard", "GET", {}, token).then((response) => response?.data?.auto_debit_enabled ?? false);
+}
+
+export function setAutoDebitPreference(enabled, token) {
+  return request("/api/v1/profile/auto-debit", "PATCH", { enabled }, token);
+}
+
 export async function getSavingsGroupDetail(groupId, token) {
   const response = await getSavingsGroups(token);
   const groups = Array.isArray(response?.data) ? response.data : [];
