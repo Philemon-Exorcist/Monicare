@@ -124,8 +124,8 @@ async def collect_due_group_contributions_once() -> list[str]:
             new_wallet_balance = current_wallet - amount_due
             supabase_admin.table("profiles").update({"wallet_balance": new_wallet_balance}).eq("id", str(user_id)).execute()
 
-            new_group_total = float(group.get("group_wallet_balance", 0.0) or 0.0) + amount_due
-            supabase_admin.table("savings_groups").update({"group_wallet_balance": new_group_total}).eq("group_id", str(group_id)).execute()
+            new_group_total = float(group.get("current_total_saved", 0.0) or 0.0) + amount_due
+            supabase_admin.table("savings_groups").update({"current_total_saved": new_group_total}).eq("group_id", str(group_id)).execute()
 
 # whats the use for this
             supabase_admin.table("group_contributions").insert({

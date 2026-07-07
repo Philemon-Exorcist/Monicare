@@ -110,7 +110,7 @@ async def view_group_details(group_id: str, current_user=Depends(verify_user_tok
             "activated_at": group.get("activated_at"),
             "created_at": group.get("created_at"),
             "current_cycle_round": group.get("current_cycle_round"),
-            "current_total_saved": group.get("group_wallet_balance"),
+            "current_total_saved": group.get("current_total_saved"),
             "nomba_sub_account_id": group.get("nomba_sub_account_id"),
             "members": members_list,
             "person_due_for_payout": person_due,

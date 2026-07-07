@@ -91,7 +91,7 @@ async def execute_group_contribution(user_uuid: str, payload: ManualFallbackCont
 
     try:
         group_res = (
-            supabase_admin.table("savings_groups")
+            supabase_admin.table("savings_groups") # Corrected from group_name to title
             .select("group_id, group_name, contribution_amount, current_cycle_round, status, current_total_saved")
             .eq("group_id", group_id_str)
             .maybe_single()
@@ -162,7 +162,7 @@ async def execute_group_contribution(user_uuid: str, payload: ManualFallbackCont
 
         return {
             "status": "success",
-            "message": f"Successfully contributed ₦{contribution_amount:,.2f} to '{group['title']}'.",
+            "message": f"Successfully contributed ₦{contribution_amount:,.2f} to '{group['group_name']}'.",
             "data": {
                 "new_wallet_balance": new_wallet_balance,
                 "group_total_saved": new_group_total,
