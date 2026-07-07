@@ -19,7 +19,7 @@ from core.group_endpoint import group_payment_router
 from integrations.withdraw import router as withdrawals_router
 from core.fallback_savings import router as fallback_router
 from core.cron import register_background_tasks, start_background_tasks, stop_background_tasks
-
+from pages.view_group import view_router
 
 
 
@@ -52,6 +52,8 @@ app.include_router(link_router)
 app.include_router(group_payment_router)
 app.include_router(withdrawals_router)
 app.include_router(fallback_router)
+app.include_router(view_router)
+
 
 app.add_middleware(
     CORSMiddleware,

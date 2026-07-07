@@ -128,8 +128,9 @@ async def execute_group_contribution(user_uuid: str, payload: ManualFallbackCont
         new_wallet_balance = current_wallet - contribution_amount
         supabase_admin.table("profiles").update({"wallet_balance": new_wallet_balance}).eq("id", user_uuid).execute()
 
+        # Step 2: Credit group's total
         new_group_total = current_group_pool + contribution_amount
-        supabase_admin.table("savings_groups").update({"current_total_saved": new_group_total}).eq("id", group_id_str).execute()
+        supabase_admin.table("savings_groups").update({"current_total_saved": new_group_total}).eq("group_id", group_id_str).execute()
 
         # Step 3: Log the successful contribution
         supabase_admin.table("group_contributions").insert({
