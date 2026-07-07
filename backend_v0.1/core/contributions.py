@@ -142,10 +142,12 @@ async def execute_group_contribution(user_uuid: str, payload: ManualFallbackCont
         # Step 4: Create a wallet transaction record
         deterministic_txn_ref = f"INT_SG_{uuid.uuid4().hex[:12].upper()}"
         supabase_admin.table("wallet_transactions").insert({
+            "transaction_id": str(uuid.uuid4()),
             "user_id": user_uuid,
             "amount": contribution_amount,
+        #  "type": "DEBIT_TO_GROUP",
+          #  "status": "SUCCESS",
             "nomba_transaction_ref": deterministic_txn_ref,
-            "reference": f"Manual contribution for group {group_id_str}",
         }).execute()
 
         # Step 5: Mark the schedule as PAID

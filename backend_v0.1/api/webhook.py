@@ -132,11 +132,11 @@ async def handle_nomba_webhook(
 
         # Step 4b: Log the transaction to prevent duplicates
         supabase_admin.table("wallet_transactions").insert({
-            "id": str(uuid.uuid4()),
+            "transaction_id": str(uuid.uuid4()),
             "user_id": profile["id"],
             "amount": amount_paid,
-            "type": "TOPUP",
-            "status": "SUCCESS",
+           # "type": "TOPUP",
+          #  "status": "SUCCESS",
             "nomba_transaction_ref": transaction_ref,
         }).execute()
 
