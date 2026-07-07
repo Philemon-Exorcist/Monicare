@@ -2,6 +2,7 @@ import hashlib
 import hmac
 import json
 import logging
+import base64
 import os
 from typing import Any, Optional
 import uuid
@@ -37,30 +38,49 @@ class NombaWebhookPayload(BaseModel):
     data: NombaTransactionData
 
 
-async def verify_nomba_signature(request: Request, signature: str) -> bool:
+async def verify_nomba_signature(request: Request, signature: str, timestamp: str) -> bool:
     """
-    Verifies the incoming request signature against our secret.
+    Verifies the incoming request signature by reconstructing the signature string
+    as per Nomba's documentation.
     This is a critical security step to ensure the request is from Nomba.
     """
-    if not NOMBA_WEBHOOK_SECRET:
+    if not all([NOMBA_WEBHOOK_SECRET, signature, timestamp]):
         return False
 
-    body = await request.body()
-    
-    # Nomba uses HMAC-SHA512 for its signature.
-    computed_hash = hmac.new(
-        key=NOMBA_WEBHOOK_SECRET.encode("utf-8"),
-        msg=body,
-        digestmod=hashlib.sha256,
-    ).hexdigest()
+    try:
+        body_bytes = await request.body()
+        payload = json.loads(body_bytes)
 
-    return hmac.compare_digest(computed_hash, signature)
+        # Reconstruct the signature string as per Nomba documentation
+        # The string is: event_type:requestId:userId:walletId:transactionId:transactionType:transactionTime:transactionResponseCode:timestamp
+        data = payload.get("data", {})
+        merchant = data.get("merchant", {})
+        transaction = data.get("transaction", {})
+
+        event_type = payload.get("event_type", "")
+        request_id = payload.get("requestId", "")
+        user_id = merchant.get("userId", "")
+        wallet_id = merchant.get("walletId", "")
+        transaction_id = transaction.get("transactionId", "")
+        transaction_type = transaction.get("type", "")
+        transaction_time = transaction.get("time", "")
+        response_code = transaction.get("responseCode", "")
+
+        hashing_payload = f"{event_type}:{request_id}:{user_id}:{wallet_id}:{transaction_id}:{transaction_type}:{transaction_time}:{response_code}:{timestamp}"
+
+        digest = hmac.new(NOMBA_WEBHOOK_SECRET.encode(), hashing_payload.encode(), hashlib.sha256).digest()
+        computed_signature = base64.b64encode(digest).decode()
+
+        return hmac.compare_digest(computed_signature, signature)
+    except Exception:
+        return False
 
 
 @router.post("/webhook", status_code=status.HTTP_200_OK)
 async def handle_nomba_webhook(
     request: Request,
     nomba_signature: Optional[str] = Header(None),
+    nomba_timestamp: Optional[str] = Header(None),
 ) -> dict[str, Any]:
     """
     Handles incoming webhook events from Nomba for wallet funding.
@@ -70,7 +90,7 @@ async def handle_nomba_webhook(
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Signature missing.")
 
     # 1. Verify the signature
-    is_valid = await verify_nomba_signature(request, nomba_signature)
+    is_valid = await verify_nomba_signature(request, nomba_signature, nomba_timestamp)
     if not is_valid:
         logger.error("Received webhook with an invalid signature.")
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid signature.")
