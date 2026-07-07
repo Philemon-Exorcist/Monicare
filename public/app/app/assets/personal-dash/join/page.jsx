@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Sidebar from "../dash-comp/Sidebar";
 
@@ -18,6 +18,14 @@ function safeParse(value, fallback) {
 }
 
 export default function JoinCirclePage() {
+  return (
+    <Suspense fallback={<JoinCircleLoadingState />}>
+      <JoinCircleContent />
+    </Suspense>
+  );
+}
+
+function JoinCircleContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -71,7 +79,7 @@ export default function JoinCirclePage() {
       JOIN_STORAGE_KEY,
       JSON.stringify({ inviteCode, selectedSlot, circle, status: "pending-auth" })
     );
-    window.localStorage.setItem("monicare_post_auth_redirect", "/assets/personal%20dash/join?invite=" + inviteCode);
+    window.localStorage.setItem("monicare_post_auth_redirect", "/assets/personal-dash/join?invite=" + inviteCode);
     router.push("/auth/login#signup");
   };
 
@@ -204,7 +212,7 @@ export default function JoinCirclePage() {
                 <p className="mt-2 text-sm text-emerald-700">Your circle has been recorded in My Savings Circles.</p>
                 <button
                   type="button"
-                  onClick={() => router.push("/assets/personal%20dash/my-circle")}
+                  onClick={() => router.push("/assets/personal-dash/my-circle")}
                   className="mt-5 inline-flex h-11 items-center justify-center rounded-lg bg-[#ffc400] px-5 text-sm font-black text-black transition hover:bg-[#ffd33d]"
                 >
                   View My Circles
@@ -221,6 +229,16 @@ export default function JoinCirclePage() {
             )}
           </section>
         </main>
+      </div>
+    </div>
+  );
+}
+
+function JoinCircleLoadingState() {
+  return (
+    <div className="min-h-screen bg-white text-black">
+      <div className="mx-auto flex min-h-screen w-full max-w-[1440px] items-center justify-center px-4">
+        <p className="text-sm font-medium text-neutral-500">Loading invite details...</p>
       </div>
     </div>
   );

@@ -7,6 +7,8 @@ import Sidebar from "../dash-comp/Sidebar";
 const JOIN_STORAGE_KEY = "monicare_pending_join";
 const RECORDS_STORAGE_KEY = "monicare_circle_records";
 
+export const dynamic = "force-dynamic";
+
 function safeParse(value, fallback) {
   if (!value) return fallback;
 
