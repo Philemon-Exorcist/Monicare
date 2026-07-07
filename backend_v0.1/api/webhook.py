@@ -51,7 +51,7 @@ async def verify_nomba_signature(request: Request, signature: str) -> bool:
     computed_hash = hmac.new(
         key=NOMBA_WEBHOOK_SECRET.encode("utf-8"),
         msg=body,
-        digestmod=hashlib.sha512,
+        digestmod=hashlib.sha256,
     ).hexdigest()
 
     return hmac.compare_digest(computed_hash, signature)
@@ -60,17 +60,17 @@ async def verify_nomba_signature(request: Request, signature: str) -> bool:
 @router.post("/webhook", status_code=status.HTTP_200_OK)
 async def handle_nomba_webhook(
     request: Request,
-    x_nomba_signature: Optional[str] = Header(None),
+    nomba_signature: Optional[str] = Header(None),
 ) -> dict[str, Any]:
     """
     Handles incoming webhook events from Nomba for wallet funding.
     """
-    if not x_nomba_signature:
+    if not nomba_signature:
         logger.warning("Received webhook without a signature.")
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Signature missing.")
 
     # 1. Verify the signature
-    is_valid = await verify_nomba_signature(request, x_nomba_signature)
+    is_valid = await verify_nomba_signature(request, nomba_signature)
     if not is_valid:
         logger.error("Received webhook with an invalid signature.")
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid signature.")
