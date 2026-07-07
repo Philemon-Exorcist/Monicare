@@ -2,19 +2,21 @@
 from datetime import datetime
 from uuid import UUID
 
-from fastapi import HTTPException, status
+from fastapi import Depends, HTTPException, status
 
+from app.auth import verify_user_token
 from app.supabase_client import get_supabase_admin
 
 logger = logging.getLogger("Monicare.activate_group")
 
 
-async def activate_group_by_button(group_id: str, creator_id: str) -> dict:
+async def activate_group_by_button(group_id: str, current_user=Depends(verify_user_token)) -> dict:
     if not group_id:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Group ID is required.")
 
     try:
         UUID(group_id)
+        creator_id = str(getattr(current_user, "id", None))
     except Exception:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid group ID.")
 
@@ -58,7 +60,7 @@ async def activate_group_by_button(group_id: str, creator_id: str) -> dict:
         supabase_admin.table("savings_groups").update({
             "status": "ACTIVE",
             "activated_at": activated_at,
-        }).eq("id", group_id).execute()
+        }).eq("group_id", group_id).execute()
     except Exception as err:
         logger.error("Failed to activate group %s: %s", group_id, err, exc_info=True)
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Unable to activate group.")
