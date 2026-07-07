@@ -3,13 +3,13 @@
 import { CopyIcon } from "./icons";
 import { useState, useEffect } from "react";
 
-export default function SummaryCards({ profile, isLoading, error }) {
+export default function SummaryCards({ profile, dashboardData, isLoading, error }) {
   const walletBalance = profile?.wallet_balance ?? 0;
 
   return (
     <section className="mt-7 grid gap-4 lg:grid-cols-3">
       <AvailableBalanceCard balance={walletBalance} isLoading={isLoading} />
-      <LiquidityCard />
+      <LiquidityCard groups={dashboardData?.groups || []} />
       <VirtualAccountCard profile={profile} isLoading={isLoading} error={error} />
     </section>
   );
@@ -33,16 +33,22 @@ function AvailableBalanceCard({ balance, isLoading }) {
   );
 }
 
-function LiquidityCard() {
+function LiquidityCard({ groups }) {
+  const totalLiquidity = groups.reduce((sum, group) => sum + Number(group?.contribution_amount || 0), 0);
+  const activeCount = groups.filter((group) => ["ACTIVE", "DRAFT", "PROPOSED_CHANGES"].includes(String(group?.status || "").toUpperCase())).length;
+  const nextLabel = groups[0]?.created_at ? new Date(groups[0].created_at).toLocaleDateString("en-NG", { day: "numeric", month: "short" }) : "Pending";
+
   return (
     <div className="rounded-lg bg-[#070707] p-7 text-white">
       <p className="font-mono text-[10px] uppercase tracking-[0.35em] text-neutral-500">
         Total Collective Liquidity
       </p>
-      <div className="mt-5 text-4xl font-black tracking-tight sm:text-5xl">N180,000</div>
+      <div className="mt-5 text-4xl font-black tracking-tight sm:text-5xl">
+        {new Intl.NumberFormat("en-NG", { style: "currency", currency: "NGN", maximumFractionDigits: 0 }).format(totalLiquidity)}
+      </div>
       <div className="mt-9 flex flex-wrap gap-2">
-        <Pill tone="green">3 active circles</Pill>
-        <Pill tone="yellow">Next payout: 9 Jul</Pill>
+        <Pill tone="green">{activeCount} active circles</Pill>
+        <Pill tone="yellow">Next payout: {nextLabel}</Pill>
       </div>
     </div>
   );

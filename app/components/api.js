@@ -104,7 +104,7 @@ export function joinGroupViaLink(groupLink, token) {
 }
 
 export function acceptGroupInvitation(groupLink, token) {
-  return request("/api/v1/group_saving/accept_invitation", "POST", { group_link: groupLink }, token);
+  return request(`/api/v1/group_saving/accept_invitation?group_link=${encodeURIComponent(groupLink)}`, "POST", {}, token);
 }
 
 export function submitWithdrawal(payload, token) {
@@ -120,13 +120,5 @@ export function setAutoDebitPreference(enabled, token) {
 }
 
 export async function getSavingsGroupDetail(groupId, token) {
-  const response = await getSavingsGroups(token);
-  const groups = Array.isArray(response?.data) ? response.data : [];
-  const match = groups.find((group) => String(group?.group_id || group?.id) === String(groupId));
-
-  return {
-    status: "success",
-    message: match ? "Savings group retrieved successfully." : "Savings group not found.",
-    data: match || null,
-  };
+  return request(`/api/v1/group/?group_id=${encodeURIComponent(groupId)}`, "GET", {}, token);
 }

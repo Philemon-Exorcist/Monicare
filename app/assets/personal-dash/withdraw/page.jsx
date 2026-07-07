@@ -1,13 +1,21 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getDashboardProfile } from "../../../components/api";
+import { getDashboardProfile, submitWithdrawal } from "../../../components/api";
 import Sidebar from "../dash-comp/Sidebar";
 
 export default function WithdrawPage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [profile, setProfile] = useState(null);
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
+  const [form, setForm] = useState({
+    account_number: "",
+    bank_code: "",
+    amount: "",
+    transaction_pin: "",
+  });
+  const [statusMessage, setStatusMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const token =
@@ -45,6 +53,38 @@ export default function WithdrawPage() {
       isMounted = false;
     };
   }, []);
+
+  const handleSubmit = async () => {
+    const token =
+      window.localStorage.getItem("monicare_access_token") ||
+      window.sessionStorage.getItem("monicare_access_token");
+
+    if (!token) {
+      setStatusMessage("Please sign in before requesting a withdrawal.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    setStatusMessage("");
+
+    try {
+      const response = await submitWithdrawal(
+        {
+          account_number: form.account_number,
+          bank_code: form.bank_code,
+          amount: Number(form.amount),
+          transaction_pin: form.transaction_pin,
+        },
+        token
+      );
+
+      setStatusMessage(response?.message || "Withdrawal request submitted.");
+    } catch (error) {
+      setStatusMessage(error?.message || "Unable to submit withdrawal request.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-white text-black">
@@ -90,19 +130,28 @@ export default function WithdrawPage() {
 
             <div className="mt-8 rounded-2xl border border-neutral-200 bg-[#fbfbfa] p-5">
               <div className="grid gap-4 sm:grid-cols-2">
-                <InfoCard label="Available balance" value="N0.00" />
+                <InfoCard label="Available balance" value={new Intl.NumberFormat("en-NG", { style: "currency", currency: "NGN", maximumFractionDigits: 0 }).format(profile?.wallet_balance || 0)} />
                 <InfoCard label="Processing time" value="1-3 business days" />
                 <InfoCard label="Withdrawal method" value="Bank transfer" />
                 <InfoCard label="Status" value="Not started" />
               </div>
             </div>
 
-            <button
-              type="button"
-              className="mt-8 inline-flex h-12 w-full items-center justify-center rounded-lg bg-[#ffc400] px-5 text-sm font-black text-black transition hover:bg-[#ffd33d]"
-            >
-              Start Withdrawal
-            </button>
+            <div className="mt-8 grid gap-4">
+              <input className="h-12 rounded-lg border border-neutral-200 px-4 text-sm" placeholder="Bank code" value={form.bank_code} onChange={(e) => setForm((prev) => ({ ...prev, bank_code: e.target.value }))} />
+              <input className="h-12 rounded-lg border border-neutral-200 px-4 text-sm" placeholder="Account number" value={form.account_number} onChange={(e) => setForm((prev) => ({ ...prev, account_number: e.target.value }))} />
+              <input className="h-12 rounded-lg border border-neutral-200 px-4 text-sm" placeholder="Amount" type="number" value={form.amount} onChange={(e) => setForm((prev) => ({ ...prev, amount: e.target.value }))} />
+              <input className="h-12 rounded-lg border border-neutral-200 px-4 text-sm" placeholder="Transaction PIN" type="password" value={form.transaction_pin} onChange={(e) => setForm((prev) => ({ ...prev, transaction_pin: e.target.value }))} />
+              <button
+                type="button"
+                onClick={handleSubmit}
+                disabled={isSubmitting}
+                className="inline-flex h-12 w-full items-center justify-center rounded-lg bg-[#ffc400] px-5 text-sm font-black text-black transition hover:bg-[#ffd33d] disabled:opacity-60"
+              >
+                {isSubmitting ? "Submitting..." : "Start Withdrawal"}
+              </button>
+              {statusMessage ? <p className="text-sm text-neutral-600">{statusMessage}</p> : null}
+            </div>
           </section>
         </main>
       </div>

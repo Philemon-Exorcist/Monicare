@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { getDashboardProfile } from "../../../components/api";
+import { getDashboardProfile, getSavingsGroups } from "../../../components/api";
 import Sidebar from "../dash-comp/Sidebar";
 
 export default function MyCirclePage() {
@@ -37,6 +37,51 @@ export default function MyCirclePage() {
     }
 
     loadProfile();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    const token =
+      window.localStorage.getItem("monicare_access_token") ||
+      window.sessionStorage.getItem("monicare_access_token");
+
+    if (!token) {
+      setIsLoadingRecords(false);
+      return;
+    }
+
+    let isMounted = true;
+
+    async function loadGroups() {
+      try {
+        const response = await getSavingsGroups(token);
+        if (!isMounted) return;
+
+        setRecords(
+          Array.isArray(response?.data)
+            ? response.data.map((group, index) => ({
+                ...group,
+                id: group.group_id || group.id || `circle-${index}`,
+                name: group.title || group.group_name,
+                amount: group.contribution_amount,
+                cadence: group.cycle_period,
+                source: group.status,
+                inviteLink: group.group_link,
+              }))
+            : []
+        );
+      } catch (error) {
+        console.error("Failed to load savings groups", error);
+        if (isMounted) setRecords([]);
+      } finally {
+        if (isMounted) setIsLoadingRecords(false);
+      }
+    }
+
+    loadGroups();
 
     return () => {
       isMounted = false;
@@ -118,7 +163,7 @@ export default function MyCirclePage() {
                     <CircleCard
                       key={`${record.name}-${record.createdAt}`}
                       record={record}
-                      onView={() => router.push(`/assets/personal%20dash/group-saving/${encodeURIComponent(record.id)}`)}
+                      onView={() => router.push(`/assets/personal-dash/group-saving/${encodeURIComponent(record.id)}`)}
                     />
                   ))
                 ) : (
@@ -160,7 +205,7 @@ function CircleCard({ record, onView }) {
       </div>
       <div className="mt-4 grid gap-2 text-sm text-neutral-600 sm:grid-cols-3">
         <div><span className="font-mono text-[10px] uppercase tracking-[0.28em] text-neutral-400">Cadence</span><p className="mt-1 font-semibold text-black">{record.cadence}</p></div>
-        <div><span className="font-mono text-[10px] uppercase tracking-[0.28em] text-neutral-400">Amount</span><p className="mt-1 font-semibold text-black">{record.amount}</p></div>
+        <div><span className="font-mono text-[10px] uppercase tracking-[0.28em] text-neutral-400">Amount</span><p className="mt-1 font-semibold text-black">{new Intl.NumberFormat("en-NG", { style: "currency", currency: "NGN", maximumFractionDigits: 0 }).format(Number(record.amount || 0))}</p></div>
         <div><span className="font-mono text-[10px] uppercase tracking-[0.28em] text-neutral-400">Created</span><p className="mt-1 font-semibold text-black">{new Date(record.createdAt).toLocaleString()}</p></div>
       </div>
       {record.inviteLink ? <p className="mt-4 break-all rounded-xl bg-white px-4 py-3 font-mono text-xs text-neutral-500">{record.inviteLink}</p> : null}

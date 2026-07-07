@@ -1,22 +1,21 @@
-﻿"use client";
+"use client";
 
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Sidebar from "../dash-comp/Sidebar";
-
-const JOIN_STORAGE_KEY = "monicare_pending_join";
-const RECORDS_STORAGE_KEY = "monicare_circle_records";
+import { acceptGroupInvitation, joinGroupViaLink } from "../../../components/api";
 
 export const dynamic = "force-dynamic";
 
-function safeParse(value, fallback) {
-  if (!value) return fallback;
+function getToken() {
+  if (typeof window === "undefined") return "";
+  return window.localStorage.getItem("monicare_access_token") || window.sessionStorage.getItem("monicare_access_token") || "";
+}
 
-  try {
-    return JSON.parse(value);
-  } catch {
-    return fallback;
-  }
+function extractGroupLink(rawInvite) {
+  if (!rawInvite) return "";
+  if (rawInvite.startsWith("http")) return rawInvite;
+  return `https://monicare-theta.vercel.app/group/${rawInvite}`;
 }
 
 export default function JoinCirclePage() {
@@ -36,109 +35,79 @@ function JoinCircleContent() {
   const [selectedSlot, setSelectedSlot] = useState("Slot 3");
   const [joinState, setJoinState] = useState("form");
   const [error, setError] = useState("");
-  const [draft, setDraft] = useState(null);
+  const [groupData, setGroupData] = useState(null);
 
-  const inviteCode = searchParams.get("invite") || "7x92-k9lb";
-  const circle = useMemo(
-    () => ({
-      name: "Tech Cohort Savings",
-      amount: "N50,000.00",
-      frequency: "Weekly",
-      payoutMode: "First-Come, First-Served (Member Picked)",
-      inviteLink: `https://monicare.app/join?invite=${inviteCode}`,
-    }),
-    [inviteCode]
-  );
+  const rawInvite = searchParams.get("invite") || searchParams.get("group_link") || "";
+  const inviteLink = useMemo(() => extractGroupLink(rawInvite), [rawInvite]);
 
   useEffect(() => {
-    const token =
-      window.localStorage.getItem("monicare_access_token") ||
-      window.sessionStorage.getItem("monicare_access_token");
-
-    if (token) {
-      setIsLoadingProfile(false);
-    } else {
-      setIsLoadingProfile(false);
-    }
+    setIsLoadingProfile(false);
   }, []);
 
   useEffect(() => {
-    try {
-      const stored = safeParse(window.localStorage.getItem(JOIN_STORAGE_KEY), null);
-      if (stored?.inviteCode === inviteCode) {
-        setDraft(stored);
-        if (stored.selectedSlot) {
-          setSelectedSlot(stored.selectedSlot);
-        }
-      }
-    } catch {
-      setDraft(null);
-    }
-  }, [inviteCode]);
+    if (!inviteLink) return;
+
+    const token = getToken();
+    if (!token) return;
+
+    let isMounted = true;
+    joinGroupViaLink(inviteLink, token)
+      .then((response) => {
+        if (!isMounted) return;
+        setGroupData(response?.data || null);
+      })
+      .catch((err) => {
+        if (!isMounted) return;
+        setError(err?.message || "Unable to load invite details.");
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [inviteLink]);
+
+  const circle = useMemo(
+    () => ({
+      name: groupData?.group_name || "Savings Circle",
+      amount: Number(groupData?.contribution_amount || 0),
+      frequency: groupData?.cycle_period || "WEEKLY",
+      payoutMode: "Member slot based",
+      inviteLink,
+    }),
+    [groupData, inviteLink]
+  );
 
   const handleRequireAuth = () => {
-    window.localStorage.setItem(
-      JOIN_STORAGE_KEY,
-      JSON.stringify({ inviteCode, selectedSlot, circle, status: "pending-auth" })
-    );
-    window.localStorage.setItem("monicare_post_auth_redirect", "/assets/personal-dash/join?invite=" + inviteCode);
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("monicare_post_auth_redirect", `/assets/personal-dash/join?invite=${encodeURIComponent(rawInvite)}`);
+    }
     router.push("/auth/login#signup");
   };
 
-  const handleAccept = () => {
-    const token =
-      window.localStorage.getItem("monicare_access_token") ||
-      window.sessionStorage.getItem("monicare_access_token");
-
+  const handleAccept = async () => {
+    const token = getToken();
     if (!token) {
       setError("Please register or log in to continue your invite.");
       handleRequireAuth();
       return;
     }
 
-    const record = {
-      name: circle.name,
-      status: "Joined",
-      cadence: circle.frequency,
-      amount: circle.amount,
-      source: "Joined circle",
-      inviteLink: circle.inviteLink,
-      createdAt: new Date().toISOString(),
-      selectedSlot,
-    };
-
-    const existing = safeParse(window.localStorage.getItem(RECORDS_STORAGE_KEY), []);
-    const nextRecords = [record, ...existing.filter((item) => item.inviteLink !== circle.inviteLink)];
-    window.localStorage.setItem(RECORDS_STORAGE_KEY, JSON.stringify(nextRecords));
-    window.localStorage.removeItem(JOIN_STORAGE_KEY);
-    setJoinState("success");
-  };
-
-  useEffect(() => {
-    const token =
-      window.localStorage.getItem("monicare_access_token") ||
-      window.sessionStorage.getItem("monicare_access_token");
-
-    if (token && draft && draft.status === "pending-auth") {
-      handleAccept();
+    try {
+      const response = await acceptGroupInvitation(inviteLink, token);
+      setJoinState("success");
+      setError("");
+      setGroupData(response?.data || groupData);
+    } catch (err) {
+      setError(err?.message || "Unable to accept invite.");
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [draft]);
+  };
 
   return (
     <div className="min-h-screen bg-white text-black">
       <div className="relative mx-auto flex w-full max-w-[1440px] flex-col lg:h-screen lg:flex-row lg:overflow-hidden">
-        <div
-          className={`fixed inset-0 z-40 transform bg-slate-900 transition-transform duration-300 ease-in-out lg:hidden ${
-            isSidebarOpen ? "translate-x-0" : "-translate-x-full"
-          }`}
-        >
+        <div className={`fixed inset-0 z-40 transform bg-slate-900 transition-transform duration-300 ease-in-out lg:hidden ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}>
           <Sidebar profile={profile} isLoading={isLoadingProfile} />
-          <button
-            onClick={() => setIsSidebarOpen(false)}
-            className="absolute right-4 top-4 text-white"
-            aria-label="Close sidebar"
-          >
+          <button onClick={() => setIsSidebarOpen(false)} className="absolute right-4 top-4 text-white" aria-label="Close sidebar">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -160,17 +129,13 @@ function JoinCircleContent() {
 
           <section className="mx-auto max-w-3xl rounded-[28px] border border-neutral-200 bg-white px-5 py-8 shadow-[0_28px_90px_rgba(15,23,42,0.08)] sm:px-8 lg:px-10">
             <p className="font-mono text-[10px] uppercase tracking-[0.32em] text-neutral-500">Invite only</p>
-            <h1 className="mt-3 text-3xl font-black tracking-tight text-black sm:text-4xl">
-              You&apos;ve been invited to join an Esusu Circle
-            </h1>
-            <p className="mt-3 text-sm leading-6 text-neutral-500">
-              Review the circle details, pick your payout slot, and accept the invite to join.
-            </p>
+            <h1 className="mt-3 text-3xl font-black tracking-tight text-black sm:text-4xl">You&apos;ve been invited to join an Esusu Circle</h1>
+            <p className="mt-3 text-sm leading-6 text-neutral-500">Review the circle details, pick your payout slot, and accept the invite to join.</p>
 
             <div className="mt-8 rounded-2xl border border-neutral-200 bg-[#fbfbfa] p-5">
               <div className="grid gap-4 sm:grid-cols-2">
                 <InfoCard label="Circle" value={circle.name} />
-                <InfoCard label="Contribution" value={circle.amount} />
+                <InfoCard label="Contribution" value={new Intl.NumberFormat("en-NG", { style: "currency", currency: "NGN", maximumFractionDigits: 0 }).format(circle.amount)} />
                 <InfoCard label="Payout mode" value={circle.payoutMode} />
                 <InfoCard label="Frequency" value={circle.frequency} />
               </div>
@@ -182,25 +147,17 @@ function JoinCircleContent() {
                 <p className="text-xs font-semibold text-neutral-400">{selectedSlot} selected</p>
               </div>
               <div className="mt-4 space-y-3">
-                {[
-                  "Slot 1 - Available",
-                  "Slot 2 - Available",
-                  "Slot 3 - Best fit",
-                  "Slot 4 - Available",
-                  "Slot 5 - Available",
-                ].map((slot) => (
+                {["Slot 1", "Slot 2", "Slot 3", "Slot 4", "Slot 5"].map((slot) => (
                   <button
                     key={slot}
                     type="button"
-                    onClick={() => setSelectedSlot(slot.split(" - ")[0])}
+                    onClick={() => setSelectedSlot(slot)}
                     className={`flex w-full items-center justify-between rounded-xl border px-4 py-4 text-left transition ${
-                      selectedSlot === slot.split(" - ")[0]
-                        ? "border-emerald-400 bg-emerald-50"
-                        : "border-neutral-200 bg-white hover:border-neutral-300"
+                      selectedSlot === slot ? "border-emerald-400 bg-emerald-50" : "border-neutral-200 bg-white hover:border-neutral-300"
                     }`}
                   >
-                    <span className="text-sm font-semibold text-black">{slot.split(" - ")[0]}</span>
-                    <span className="text-xs font-medium text-neutral-500">{slot.split(" - ")[1]}</span>
+                    <span className="text-sm font-semibold text-black">{slot}</span>
+                    <span className="text-xs font-medium text-neutral-500">{slot === "Slot 3" ? "Best fit" : "Available"}</span>
                   </button>
                 ))}
               </div>
@@ -212,20 +169,12 @@ function JoinCircleContent() {
               <div className="mt-8 rounded-2xl border border-emerald-200 bg-emerald-50 p-6 text-center">
                 <p className="text-2xl font-black text-emerald-700">You&apos;re in.</p>
                 <p className="mt-2 text-sm text-emerald-700">Your circle has been recorded in My Savings Circles.</p>
-                <button
-                  type="button"
-                  onClick={() => router.push("/assets/personal-dash/my-circle")}
-                  className="mt-5 inline-flex h-11 items-center justify-center rounded-lg bg-[#ffc400] px-5 text-sm font-black text-black transition hover:bg-[#ffd33d]"
-                >
+                <button type="button" onClick={() => router.push("/assets/personal-dash/my-circle")} className="mt-5 inline-flex h-11 items-center justify-center rounded-lg bg-[#ffc400] px-5 text-sm font-black text-black transition hover:bg-[#ffd33d]">
                   View My Circles
                 </button>
               </div>
             ) : (
-              <button
-                type="button"
-                onClick={handleAccept}
-                className="mt-8 inline-flex h-12 w-full items-center justify-center rounded-lg bg-[#ffc400] px-5 text-sm font-black text-black transition hover:bg-[#ffd33d]"
-              >
+              <button type="button" onClick={handleAccept} className="mt-8 inline-flex h-12 w-full items-center justify-center rounded-lg bg-[#ffc400] px-5 text-sm font-black text-black transition hover:bg-[#ffd33d]">
                 Accept Invite & Join Circle
               </button>
             )}

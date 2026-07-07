@@ -1,42 +1,11 @@
-﻿"use client";
+"use client";
 
-import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { circles as fallbackCircles } from "./dashboardData";
 
-const RECORDS_STORAGE_KEY = "monicare_circle_records";
-
-function safeParse(value, fallback) {
-  if (!value) return fallback;
-
-  try {
-    return JSON.parse(value);
-  } catch {
-    return fallback;
-  }
-}
-
-export default function ActiveCircles() {
+export default function ActiveCircles({ groups = [] }) {
   const router = useRouter();
-  const [circles, setCircles] = useState(fallbackCircles);
-
-  useEffect(() => {
-    const stored = safeParse(window.localStorage.getItem(RECORDS_STORAGE_KEY), []);
-    if (Array.isArray(stored) && stored.length) {
-      setCircles(
-        stored.map((item, index) => ({
-          id: item.id || item.name?.toLowerCase().replace(/\s+/g, "-") || `circle-${index}`,
-          name: item.name,
-          status: item.status,
-          position: item.selectedSlot || item.position || "Pending slot",
-          amount: item.amount,
-          cadence: item.cadence,
-        }))
-      );
-    }
-  }, []);
-
-  const hasCircles = Array.isArray(circles) && circles.length > 0;
+  const circles = Array.isArray(groups) ? groups : [];
+  const hasCircles = circles.length > 0;
 
   return (
     <section className="mt-8">
@@ -52,9 +21,9 @@ export default function ActiveCircles() {
         <div className="space-y-3">
           {circles.map((circle) => (
             <CircleRow
-              key={circle.id}
+              key={circle.group_id || circle.id}
               circle={circle}
-              onView={() => router.push(`/assets/personal%20dash/group-saving/${encodeURIComponent(circle.id)}`)}
+              onView={() => router.push(`/assets/personal-dash/group-saving/${encodeURIComponent(circle.group_id || circle.id)}`)}
             />
           ))}
         </div>
@@ -69,8 +38,9 @@ export default function ActiveCircles() {
 }
 
 function CircleRow({ circle, onView }) {
+  const amount = Number(circle.contribution_amount || circle.amount || 0);
   const statusTone =
-    circle.status === "Manual Pay"
+    String(circle.status || "").toUpperCase() === "MANUAL PAY"
       ? "bg-neutral-100 text-neutral-500"
       : "bg-emerald-50 text-emerald-500";
 
@@ -78,15 +48,18 @@ function CircleRow({ circle, onView }) {
     <div className="flex flex-col gap-4 rounded-lg border border-neutral-200 bg-white px-5 py-4 transition hover:border-black sm:flex-row sm:items-center sm:justify-between">
       <div>
         <div className="flex flex-wrap items-center gap-2">
-          <h3 className="text-sm font-black">{circle.name}</h3>
+          <h3 className="text-sm font-black">{circle.title || circle.group_name || circle.name}</h3>
           <span className={`rounded px-2 py-1 font-mono text-[10px] font-bold ${statusTone}`}>
             {circle.status}
           </span>
         </div>
         <p className="mt-3 font-mono text-[11px] text-neutral-500">
-          Your Position: <span className="font-black text-black">{circle.position}</span>
+          Your Position: <span className="font-black text-black">{circle.slot_position ? `Slot ${circle.slot_position}` : "Pending slot"}</span>
           <span className="mx-4" />
-          <span className="font-black text-black">{circle.amount}</span> /{circle.cadence}
+          <span className="font-black text-black">
+            {new Intl.NumberFormat("en-NG", { style: "currency", currency: "NGN", maximumFractionDigits: 0 }).format(amount)}
+          </span>{" "}
+          /{circle.cycle_period || circle.cadence}
         </p>
       </div>
 

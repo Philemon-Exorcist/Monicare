@@ -14,6 +14,7 @@ export default function MyDash() {
   const [profile, setProfile] = useState(null);
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
   const [profileError, setProfileError] = useState("");
+  const [dashboardData, setDashboardData] = useState(null);
 
   useEffect(() => {
     const token =
@@ -37,6 +38,7 @@ export default function MyDash() {
         }
 
         setProfile(response?.data || null);
+        setDashboardData(response?.data || null);
         setProfileError("");
       } catch (error) {
         if (!isMounted) {
@@ -93,10 +95,10 @@ export default function MyDash() {
               </svg>
             </button>
           </div>
-          <SummaryCards profile={profile} isLoading={isLoadingProfile} error={profileError} />
+          <SummaryCards profile={profile} dashboardData={dashboardData} isLoading={isLoadingProfile} error={profileError} />
           <DashboardActions />
-          <ActiveCircles />
-          <ContributionHistory />
+          <ActiveCircles groups={dashboardData?.groups || []} />
+          <ContributionHistory groups={dashboardData?.groups || []} />
         </main>
       </div>
     </div>
