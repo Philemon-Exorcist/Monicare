@@ -35,7 +35,7 @@ async def create_virtual_account(
         account_ref=tracking_reference,
         bvn=bvn.strip() if bvn else None,
         expiry_date=future_expiry,
-        expected_amount="1000.00"  # Set to "0.00" for an open, multi-use collection setup
+        expected_amount="1000"  # Set to "0.00" for an open, multi-use collection setup
     )
     
     logger.info(f"OUTBOUND NOMBA SUB-ACCOUNT PAYLOAD: {json.dumps(nomba_payload.model_dump(by_alias=True, exclude_none=True))}")
