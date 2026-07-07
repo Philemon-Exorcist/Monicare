@@ -176,6 +176,7 @@ async def handle_nomba_webhook(
             "amount": amount_paid,
             "type": "TOPUP",
             "status": "SUCCESS",
+            "reference" :  transaction_ref,
             "nomba_transaction_ref": transaction_ref,
         }).execute()
 

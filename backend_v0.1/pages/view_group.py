@@ -33,7 +33,7 @@ async def view_group_details(group_id: str, current_user=Depends(verify_user_tok
         group_response = (
             supabase_admin.table("savings_groups")
             .select("*")
-            .eq("group_id", group_id)
+            .or_(f"group_id.eq.{group_id},id.eq.{group_id}")
             .maybe_single()
             .execute()
         )
@@ -42,11 +42,13 @@ async def view_group_details(group_id: str, current_user=Depends(verify_user_tok
         if not group:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Savings group not found.")
 
+        resolved_group_id = group.get("group_id") or group.get("id") or group_id
+
         # 2. Fetch all members of the group
         members_response = (
             supabase_admin.table("group_members")
             .select("user_id, slot_position, joined_at, profiles(first_name, last_name)")
-            .eq("group_id", group_id)
+            .eq("group_id", resolved_group_id)
             .order("slot_position", desc=False)
             .execute()
         )
@@ -82,7 +84,7 @@ async def view_group_details(group_id: str, current_user=Depends(verify_user_tok
             paid_members_response = (
                 supabase_admin.table("group_schedules")
                 .select("user_id")
-                .eq("group_id", group_id)
+                .eq("group_id", resolved_group_id)
                 .eq("cycle_round", current_round)
                 .eq("payment_status", "PAID")
                 .execute()
@@ -100,6 +102,7 @@ async def view_group_details(group_id: str, current_user=Depends(verify_user_tok
         # 4. Construct the final response
         group_details = {
             "group_id": group.get("group_id"),
+            "id": group.get("id"),
             "group_name": group.get("group_name"),
             "contribution_amount": group.get("contribution_amount"),
             "cycle_period": group.get("cycle_period"),
