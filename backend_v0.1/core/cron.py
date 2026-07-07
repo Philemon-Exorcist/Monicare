@@ -13,19 +13,19 @@ from core.activate_group import _create_initial_group_schedule, activate_groups_
 logger = logging.getLogger("Monicare.cron")
 
 KEEP_ALIVE_URL = os.environ.get("KEEP_ALIVE_URL", "https://monicare.onrender.com/health")
-KEEP_ALIVE_INTERVAL_SECONDS = int(os.environ.get("KEEP_ALIVE_INTERVAL_SECONDS", 600))
+KEEP_ALIVE_INTERVAL_SECONDS = int(os.environ.get("KEEP_ALIVE_INTERVAL_SECONDS", 60))
 ENABLE_KEEP_ALIVE = os.environ.get("ENABLE_KEEP_ALIVE", "true").lower() in ("1", "true", "yes")
 
-AUTO_ACTIVATE_INTERVAL_SECONDS = int(os.environ.get("AUTO_ACTIVATE_INTERVAL_SECONDS", 300))
+AUTO_ACTIVATE_INTERVAL_SECONDS = int(os.environ.get("AUTO_ACTIVATE_INTERVAL_SECONDS", 60))
 ENABLE_AUTO_ACTIVATION = os.environ.get("ENABLE_AUTO_ACTIVATION", "true").lower() in ("1", "true", "yes")
 
-GROUP_COLLECTION_INTERVAL_SECONDS = int(os.environ.get("GROUP_COLLECTION_INTERVAL_SECONDS", 300))
+GROUP_COLLECTION_INTERVAL_SECONDS = int(os.environ.get("GROUP_COLLECTION_INTERVAL_SECONDS", 60))
 ENABLE_GROUP_COLLECTION_CRON = os.environ.get("ENABLE_GROUP_COLLECTION_CRON", "true").lower() in ("1", "true", "yes")
 
-PAYOUT_PROCESSING_INTERVAL_SECONDS = int(os.environ.get("PAYOUT_PROCESSING_INTERVAL_SECONDS", 300))
+PAYOUT_PROCESSING_INTERVAL_SECONDS = int(os.environ.get("PAYOUT_PROCESSING_INTERVAL_SECONDS", 60))
 ENABLE_PAYOUT_PROCESSING = os.environ.get("ENABLE_PAYOUT_PROCESSING", "true").lower() in ("1", "true", "yes")
 
-NOMBA_HISTORY_SYNC_INTERVAL_SECONDS = int(os.environ.get("NOMBA_HISTORY_SYNC_INTERVAL_SECONDS", 86400))
+NOMBA_HISTORY_SYNC_INTERVAL_SECONDS = int(os.environ.get("NOMBA_HISTORY_SYNC_INTERVAL_SECONDS",60 )) #86400
 ENABLE_NOMBA_HISTORY_SYNC = os.environ.get("ENABLE_NOMBA_HISTORY_SYNC", "false").lower() in ("1", "true", "yes")
 NOMBA_HISTORY_DAYS_BACK = int(os.environ.get("NOMBA_HISTORY_DAYS_BACK", 7))
 
