@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Sidebar from "../dash-comp/Sidebar";
 
@@ -18,6 +18,14 @@ function safeParse(value, fallback) {
 }
 
 export default function JoinCirclePage() {
+  return (
+    <Suspense fallback={<JoinCircleLoadingState />}>
+      <JoinCircleContent />
+    </Suspense>
+  );
+}
+
+function JoinCircleContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -221,6 +229,16 @@ export default function JoinCirclePage() {
             )}
           </section>
         </main>
+      </div>
+    </div>
+  );
+}
+
+function JoinCircleLoadingState() {
+  return (
+    <div className="min-h-screen bg-white text-black">
+      <div className="mx-auto flex min-h-screen w-full max-w-[1440px] items-center justify-center px-4">
+        <p className="text-sm font-medium text-neutral-500">Loading invite details...</p>
       </div>
     </div>
   );
