@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import Sidebar from "../../dash-comp/Sidebar";
-import { getSavingsGroupDetail } from "../../../../components/api";
+import { getSavingsGroupDetail } from "../../../../../components/api";
 
 const DEFAULT_GROUP = {
   id: "",

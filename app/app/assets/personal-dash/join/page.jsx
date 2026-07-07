@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Sidebar from "../dash-comp/Sidebar";
-import { acceptGroupInvitation, joinGroupViaLink } from "../../../components/api";
+import { acceptGroupInvitation, joinGroupViaLink } from "../../../../components/api";
 
 export const dynamic = "force-dynamic";
 

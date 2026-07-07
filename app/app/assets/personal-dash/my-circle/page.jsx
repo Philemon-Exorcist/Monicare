@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { getDashboardProfile, getSavingsGroups } from "../../../components/api";
+import { getDashboardProfile, getSavingsGroups } from "../../../../components/api";
 import Sidebar from "../dash-comp/Sidebar";
 
 export default function MyCirclePage() {

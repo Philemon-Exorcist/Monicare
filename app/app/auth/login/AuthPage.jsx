@@ -4,8 +4,8 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { submitAuth } from "../../components/api";
-import AuthImage from "../../assets/u_0skhztgdyb-african-woman-9157860_1920.jpg";
+import { submitAuth } from "../../../components/api";
+import AuthImage from "../../../assets/u_0skhztgdyb-african-woman-9157860_1920.jpg";
 
 export default function AuthPage() {
   const [mode, setMode] = useState("signup");

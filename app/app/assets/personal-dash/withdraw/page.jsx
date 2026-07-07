@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getDashboardProfile, submitWithdrawal } from "../../../components/api";
+import { getDashboardProfile, submitWithdrawal } from "../../../../components/api";
 import Sidebar from "../dash-comp/Sidebar";
 
 export default function WithdrawPage() {
