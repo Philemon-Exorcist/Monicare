@@ -4,6 +4,7 @@ import json
 import logging
 import os
 from typing import Any, Optional
+import uuid
 
 from fastapi import APIRouter, Header, HTTPException, Request, status
 from pydantic import BaseModel, Field
@@ -11,7 +12,7 @@ from pydantic import BaseModel, Field
 from app.supabase_client import get_supabase_admin
 
 logger = logging.getLogger("Monicare.webhook")
-router = APIRouter(prefix="/api/v1/webhooks", tags=["Webhooks"])
+router = APIRouter(prefix="/api/monicare", tags=["Webhooks"])
 
 # Load the Nomba webhook secret from environment variables
 NOMBA_WEBHOOK_SECRET = os.environ.get("NOMBA_WEBHOOK_SECRET", "")
@@ -56,7 +57,7 @@ async def verify_nomba_signature(request: Request, signature: str) -> bool:
     return hmac.compare_digest(computed_hash, signature)
 
 
-@router.post("/nomba", status_code=status.HTTP_200_OK)
+@router.post("/webhook", status_code=status.HTTP_200_OK)
 async def handle_nomba_webhook(
     request: Request,
     x_nomba_signature: Optional[str] = Header(None),

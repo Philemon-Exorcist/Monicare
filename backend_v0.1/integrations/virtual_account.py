@@ -26,14 +26,16 @@ async def create_virtual_account(
     
     # FIX 2: Compute a standard expiration target (e.g., 3 years into the future)
     future_expiry = (datetime.utcnow() + timedelta(days=365 * 3)).strftime("%Y-%m-%d %H:%M:%S")
-    
+    if not bvn or len(str(bvn).strip()) != 11:
+        return {"success": False, "error_reason": "A valid 11-digit BVN is mandatory for production activation."}
+
     # Build payload with BVN and Expiry configurations included
     nomba_payload = NombaVirtualAccountRequest(
         account_name=clean_name,
         account_ref=tracking_reference,
         bvn=bvn.strip() if bvn else None,
         expiry_date=future_expiry,
-        expected_amount="0.00"  # Set to "0.00" for an open, multi-use collection setup
+        expected_amount="1000.00"  # Set to "0.00" for an open, multi-use collection setup
     )
     
     logger.info(f"OUTBOUND NOMBA SUB-ACCOUNT PAYLOAD: {json.dumps(nomba_payload.model_dump(by_alias=True, exclude_none=True))}")
