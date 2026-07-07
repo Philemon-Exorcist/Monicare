@@ -1,14 +1,17 @@
-
-
-
-"scripts": {
-  "dev": "next dev",
-  "build": "next build",
-  "start": "next start",
-  "lint": "next lint"
-},
 {
+  "name": "monicare-app",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
   "dependencies": {
-    "framer-motion": "^12.42.2"
+    "framer-motion": "^11.0.0",
+    "next": "latest",
+    "react": "latest",
+    "react-dom": "latest"
   }
 }
