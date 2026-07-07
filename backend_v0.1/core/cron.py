@@ -133,16 +133,19 @@ async def collect_due_group_contributions_once() -> list[str]:
 
 # whats the use for this
             supabase_admin.table("group_contributions").insert({
+                "id": str(uuid.uuid4()),
                 "group_id": str(group_id),
                 "user_id": str(user_id),
                 "amount": amount_due,
             }).execute()
 
             supabase_admin.table("wallet_transactions").insert({
+                "id": str(uuid.uuid4()),
                 "user_id": str(user_id),
                 "amount": amount_due,
+                "type": "DEBIT_TO_GROUP",
+                "status": "SUCCESS",
                 "nomba_transaction_ref": payout_ref,
-                "reference": f"Auto-contribution for group {group_id}",
             }).execute()
 
             supabase_admin.table("group_schedules").update({
@@ -237,9 +240,11 @@ async def process_payouts_and_advance_cycles_once() -> list[str]:
                 # Step 2c: Log the payout transaction
                 payout_ref = f"PAYOUT_SG_{uuid.uuid4().hex[:12].upper()}"
                 supabase_admin.table("wallet_transactions").insert({
+                    "id": str(uuid.uuid4()),
                     "user_id": recipient_id,
                     "amount": payout_amount,
-                    "reference": f"Group payout for group {group_id}, round {current_round}",
+                    "type": "CREDIT_FROM_GROUP",
+                    "status": "SUCCESS",
                     "nomba_transaction_ref": payout_ref,
                 }).execute()
 
