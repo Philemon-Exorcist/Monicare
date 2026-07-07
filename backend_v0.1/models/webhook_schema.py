@@ -20,11 +20,13 @@ class NombaTransactionData(BaseModel):
     alias_account_name: Optional[str] = Field(default=None, alias="aliasAccountName")
     response_code: Optional[str] = Field(default=None, alias="responseCode")
     originating_from: Optional[str] = Field(default=None, alias="originatingFrom")
-    transaction_amount: float = Field(alias="transactionAmount")
+    transaction_amount: float = Field(validation_alias=AliasChoices("transactionAmount", "amount"))
     narration: Optional[str] = None
     time: Optional[str] = None
     alias_account_reference: Optional[str] = Field(default=None, alias="aliasAccountReference")
     alias_account_type: Optional[str] = Field(default=None, alias="aliasAccountType")
+    account_reference: Optional[str] = Field(default=None, alias="accountReference")
+    payment_reference: Optional[str] = Field(default=None, alias="paymentReference")
 
     model_config = {"populate_by_name": True}
 

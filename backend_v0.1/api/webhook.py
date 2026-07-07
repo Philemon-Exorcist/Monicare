@@ -5,12 +5,12 @@ import logging
 import base64
 import os
 from typing import Any, Optional
-import uuid
 
 from fastapi import APIRouter, Header, HTTPException, Request, status
-from pydantic import BaseModel, Field
+from pydantic import ValidationError
 
 from app.supabase_client import get_supabase_admin
+from models.webhook_schema import NombaWebhookPayload
 
 logger = logging.getLogger("Monicare.webhook")
 router = APIRouter(prefix="/api/monicare", tags=["Webhooks"])
@@ -20,23 +20,6 @@ NOMBA_WEBHOOK_SECRET = os.environ.get("NOMBA_WEBHOOK_SECRET", "")
 
 if not NOMBA_WEBHOOK_SECRET:
     logger.warning("NOMBA_WEBHOOK_SECRET is not set. Webhook verification will fail.")
-
-# --- Pydantic Models for Nomba Webhook Payload ---
-# These models ensure the incoming data from Nomba has the structure we expect.
-
-class NombaTransactionData(BaseModel):
-    """Represents the core transaction details within the webhook payload."""
-    transaction_id: str = Field(alias="transactionId")
-    amount: float
-    status: str
-    account_reference: str = Field(alias="accountReference")
-    payment_reference: str = Field(alias="paymentReference")
-
-class NombaWebhookPayload(BaseModel):
-    """Represents the entire webhook payload sent by Nomba."""
-    event: str
-    data: NombaTransactionData
-
 
 async def verify_nomba_signature(request: Request, signature: str, timestamp: str) -> bool:
     """
@@ -98,17 +81,34 @@ async def handle_nomba_webhook(
     try:
         payload_data = await request.json()
         payload = NombaWebhookPayload.model_validate(payload_data)
-    except (json.JSONDecodeError, Exception) as e:
+    except (json.JSONDecodeError, ValidationError, Exception) as e:
         logger.error("Failed to parse webhook payload: %s", e)
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid payload format.")
 
     # 2. Process only successful payment events
-    if payload.event != "payment.success" or payload.data.status.upper() != "SUCCESS":
-        logger.info("Skipping non-successful payment event: %s", payload.event)
+    transaction = payload.data.transaction
+    merchant = payload.data.merchant
+
+    event_name = payload.event_type
+    transaction_status = (transaction.type or transaction.response_code or "").upper()
+    transaction_amount = transaction.transaction_amount
+    account_ref = (
+        transaction.account_reference
+        or transaction.alias_account_reference
+        or (merchant.wallet_id if merchant else None)
+    )
+    transaction_ref = (
+        transaction.payment_reference
+        or transaction.transaction_id
+        or transaction.session_id
+        or account_ref
+    )
+
+    if event_name not in {"payment.success", "payment_succeeded", "payment_completed"} and transaction_status not in {"SUCCESS", "00"}:
+        logger.info("Skipping non-successful payment event: %s", event_name)
         return {"status": "success", "message": "Event received but not processed."}
 
     supabase_admin = get_supabase_admin()
-    transaction_ref = payload.data.payment_reference
 
     # 3. Idempotency Check: Ensure we haven't processed this transaction before
     try:
@@ -126,8 +126,7 @@ async def handle_nomba_webhook(
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Database check failed.")
 
     # 4. Find the user and update their wallet
-    account_ref = payload.data.account_reference
-    amount_paid = payload.data.amount
+    amount_paid = transaction_amount
 
     try:
         # Find the user profile using the unique account reference
@@ -152,11 +151,10 @@ async def handle_nomba_webhook(
 
         # Step 4b: Log the transaction to prevent duplicates
         supabase_admin.table("wallet_transactions").insert({
-            "transaction_id": str(uuid.uuid4()),
             "user_id": profile["id"],
             "amount": amount_paid,
-           # "type": "TOPUP",
-          #  "status": "SUCCESS",
+            "type": "TOPUP",
+            "status": "SUCCESS",
             "nomba_transaction_ref": transaction_ref,
         }).execute()
 
