@@ -92,7 +92,7 @@ async def execute_group_contribution(user_uuid: str, payload: ManualFallbackCont
     try:
         group_res = (
             supabase_admin.table("savings_groups") # Corrected from group_name to title
-            .select("group_id, group_name, contribution_amount, current_cycle_round, status, current_total_saved")
+            .select("group_id, group_name, contribution_amount, current_cycle_round, status, group_wallet_balance")
             .eq("group_id", group_id_str)
             .maybe_single()
             .execute()
@@ -117,7 +117,7 @@ async def execute_group_contribution(user_uuid: str, payload: ManualFallbackCont
             detail="Contributions are blocked because this savings group is currently not active.",
         )
 
-    current_group_pool = float(group.get("current_total_saved", 0.0) or 0.0)
+    current_group_pool = float(group.get("group_wallet_balance", 0.0) or 0.0)
 
     try:
         # This block should be wrapped in a database transaction
@@ -130,7 +130,7 @@ async def execute_group_contribution(user_uuid: str, payload: ManualFallbackCont
 
         # Step 2: Credit group's total
         new_group_total = current_group_pool + contribution_amount
-        supabase_admin.table("savings_groups").update({"current_total_saved": new_group_total}).eq("group_id", group_id_str).execute()
+        supabase_admin.table("savings_groups").update({"group_wallet_balance": new_group_total}).eq("group_id", group_id_str).execute()
 
         # Step 3: Log the successful contribution
         supabase_admin.table("group_contributions").insert({
@@ -165,7 +165,7 @@ async def execute_group_contribution(user_uuid: str, payload: ManualFallbackCont
             "message": f"Successfully contributed ₦{contribution_amount:,.2f} to '{group['group_name']}'.",
             "data": {
                 "new_wallet_balance": new_wallet_balance,
-                "group_total_saved": new_group_total,
+                "group_wallet_balance": new_group_total,
                 "transaction_reference": deterministic_txn_ref,
             },
         }

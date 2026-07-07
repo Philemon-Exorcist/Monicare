@@ -30,7 +30,6 @@ async def _create_initial_group_schedule(group_id: str, supabase_admin) -> None:
         # 2. Fetch group details needed for scheduling
         group_res = (
             supabase_admin.table("savings_groups")
-            .select("contribution_amount, cycle_period, current_cycle_round")
             .select("contribution_amount, cycle_period, current_cycle_round, activated_at")
             .eq("group_id", group_id)
             .single()
@@ -58,19 +57,15 @@ async def _create_initial_group_schedule(group_id: str, supabase_admin) -> None:
         activated_at_str = group.get("activated_at")
 
         # Calculate the first due date based on the cycle period
-        due_at = datetime.utcnow() # Default to now
         due_at = datetime.utcnow() + timedelta(days=7) # Default to 7 days from now
         if activated_at_str:
             activated_date = datetime.fromisoformat(activated_at_str.replace("Z", "+00:00"))
             round_multiplier = current_round
             if cycle_period == "WEEKLY":
-                due_at = activated_date + timedelta(weeks=1)
                 due_at = activated_date + timedelta(weeks=round_multiplier)
             elif cycle_period == "BI_WEEKLY":
-                due_at = activated_date + timedelta(weeks=2)
                 due_at = activated_date + timedelta(weeks=2 * round_multiplier)
             elif cycle_period == "MONTHLY":
-                due_at = activated_date + timedelta(days=30) # Approximation for a month
                 due_at = activated_date + timedelta(days=30 * round_multiplier) # Approximation
         
         schedule_entries = [
