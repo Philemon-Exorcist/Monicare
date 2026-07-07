@@ -73,7 +73,7 @@ CREATE TABLE savings_groups (
 CREATE TABLE group_members (
     group_id UUID REFERENCES savings_groups(id) ON DELETE CASCADE NOT NULL,
     user_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
-    rotation_position INT NOT NULL, -- The specific cycle round when they collect the pool
+    slot_position INT NOT NULL, -- The specific cycle round when they collect the pool
     joined_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
     
     -- Database Constraints to Enforce App Rules:

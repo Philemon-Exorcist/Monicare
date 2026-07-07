@@ -52,8 +52,8 @@ async def execute_group_contribution(user_uuid: str, payload: GroupContributionR
     try:
         group_res = (
             supabase_admin.table("savings_groups")
-            .select("id, title, contribution_amount, current_cycle_round, status, current_total_saved")
-            .eq("id", group_id_str)
+            .select("group_id, group_name, contribution_amount, current_cycle_round, status, current_total_saved")
+            .eq("group_id", group_id_str)
             .maybe_single()
             .execute()
         )

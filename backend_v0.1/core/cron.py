@@ -110,8 +110,8 @@ async def collect_due_group_contributions_once() -> list[str]:
 
         group_response = (
             supabase_admin.table("savings_groups")
-            .select("title, current_total_saved, status")
-            .eq("id", str(group_id))
+            .select("group_name, current_total_saved, status")
+            .eq("group_id", str(group_id))
             .maybe_single()
             .execute()
         )
