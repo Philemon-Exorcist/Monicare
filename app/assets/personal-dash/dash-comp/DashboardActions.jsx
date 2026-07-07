@@ -2,20 +2,24 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { LinkIcon, PlusIcon } from "./icons";
+import { ArrowDownTrayIcon, LinkIcon, PlusIcon } from "./icons";
 
 export default function DashboardActions() {
   const router = useRouter();
 
   const handleCreateGroup = () => {
-    router.push("/assets/personal%20dash/groupinit");
+    router.push("/assets/personal-dash/groupinit");
+  };
+
+  const handleWithdraw = () => {
+    router.push("/assets/personal-dash/withdraw");
   };
 
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
     <>
-      <section className="mt-6 grid gap-4 sm:grid-cols-2">
+      <section className="mt-6 grid gap-4 md:grid-cols-3">
         <button
           type="button"
           onClick={handleCreateGroup}
@@ -31,6 +35,14 @@ export default function DashboardActions() {
           <LinkIcon className="h-4 w-4" />
           Join Circle via Invite Link
         </button>
+        <button
+          type="button"
+          onClick={handleWithdraw}
+          className="inline-flex h-12 items-center justify-center gap-2 rounded-lg border border-neutral-300 bg-white px-5 text-sm font-black text-black transition hover:bg-neutral-50"
+        >
+          <ArrowDownTrayIcon className="h-4 w-4" />
+          Withdrawal
+        </button>
       </section>
       {isModalOpen && <JoinCircleModal onClose={() => setIsModalOpen(false)} />}
     </>
@@ -44,9 +56,7 @@ function JoinCircleModal({ onClose }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (inviteLink) {
-      // Assuming the link contains the group ID, we can extract it
-      // For now, let's just pass the whole link as a query param
-      router.push(`/assets/personal-dash/join-circle?invite=${encodeURIComponent(inviteLink)}`);
+      router.push(`/assets/personal-dash/join?invite=${encodeURIComponent(inviteLink)}`);
     }
   };
 

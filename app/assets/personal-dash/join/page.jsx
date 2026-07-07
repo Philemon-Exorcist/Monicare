@@ -79,7 +79,7 @@ function JoinCircleContent() {
       JOIN_STORAGE_KEY,
       JSON.stringify({ inviteCode, selectedSlot, circle, status: "pending-auth" })
     );
-    window.localStorage.setItem("monicare_post_auth_redirect", "/assets/personal%20dash/join?invite=" + inviteCode);
+    window.localStorage.setItem("monicare_post_auth_redirect", "/assets/personal-dash/join?invite=" + inviteCode);
     router.push("/auth/login#signup");
   };
 
@@ -212,7 +212,7 @@ function JoinCircleContent() {
                 <p className="mt-2 text-sm text-emerald-700">Your circle has been recorded in My Savings Circles.</p>
                 <button
                   type="button"
-                  onClick={() => router.push("/assets/personal%20dash/my-circle")}
+                  onClick={() => router.push("/assets/personal-dash/my-circle")}
                   className="mt-5 inline-flex h-11 items-center justify-center rounded-lg bg-[#ffc400] px-5 text-sm font-black text-black transition hover:bg-[#ffd33d]"
                 >
                   View My Circles
