@@ -1,5 +1,5 @@
 ﻿import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from uuid import UUID
 
 from fastapi import Depends, HTTPException, status
@@ -9,6 +9,49 @@ from app.supabase_client import get_supabase_admin
 
 logger = logging.getLogger("Monicare.activate_group")
 
+async def _create_initial_group_schedule(group_id: str, supabase_admin) -> None:
+    """
+    Generates the initial payment schedule for all members of a newly activated group.
+    """
+    try:
+        # 1. Fetch group details needed for scheduling
+        group_res = (
+            supabase_admin.table("savings_groups")
+            .select("contribution_amount, cycle_period, current_cycle_round")
+            .eq("group_id", group_id)
+            .single()
+            .execute()
+        )
+        group = group_res.data
+
+        # 2. Fetch all members of the group
+        members_res = (
+            supabase_admin.table("group_members")
+            .select("user_id")
+            .eq("group_id", group_id)
+            .execute()
+        )
+        members = members_res.data
+
+        if not group or not members:
+            logger.warning("Could not generate schedule for group %s: missing group or member data.", group_id)
+            return
+
+        # 3. Prepare schedule entries for the first round
+        amount_due = group["contribution_amount"]
+        current_round = group["current_cycle_round"]
+        
+        schedule_entries = [
+            {"group_id": group_id, "user_id": member["user_id"], "amount_due": amount_due, "cycle_round": current_round}
+            for member in members
+        ]
+
+        supabase_admin.table("group_schedules").insert(schedule_entries).execute()
+        logger.info("Successfully created initial payment schedule for group %s with %d members.", group_id, len(members))
+    except Exception as err:
+        logger.error("Failed to create initial schedule for group %s: %s", group_id, err, exc_info=True)
+        # Note: We don't raise an exception here to avoid rolling back the group activation itself.
+        # This can be handled by a retry mechanism or manual intervention if needed.
 
 async def activate_group_by_button(group_id: str, current_user=Depends(verify_user_token)) -> dict:
     if not group_id:
@@ -61,6 +104,9 @@ async def activate_group_by_button(group_id: str, current_user=Depends(verify_us
             "status": "ACTIVE",
             "activated_at": activated_at,
         }).eq("group_id", group_id).execute()
+
+        # Create the initial payment schedule for the first round
+        await _create_initial_group_schedule(group_id, supabase_admin)
     except Exception as err:
         logger.error("Failed to activate group %s: %s", group_id, err, exc_info=True)
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Unable to activate group.")
@@ -121,6 +167,9 @@ async def activate_groups_by_max_slots() -> list[str]:
                 "status": "ACTIVE",
                 "activated_at": activated_at,
             }).eq("group_id", group_id).execute()
+
+            # Create the initial payment schedule for the first round
+            await _create_initial_group_schedule(group_id, supabase_admin)
             activated_group_ids.append(str(group_id))
             logger.info("Auto-activated group %s by reaching max slot capacity.", group_id)
         except Exception as err:
