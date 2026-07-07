@@ -118,7 +118,7 @@ async def activate_groups_by_max_slots() -> list[str]:
             supabase_admin.table("savings_groups").update({
                 "status": "ACTIVE",
                 "activated_at": activated_at,
-            }).eq("id", group_id).execute()
+            }).eq("group_id", group_id).execute()
             activated_group_ids.append(str(group_id))
             logger.info("Auto-activated group %s by reaching max slot capacity.", group_id)
         except Exception as err:
