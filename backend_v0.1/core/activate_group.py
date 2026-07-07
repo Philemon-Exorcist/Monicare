@@ -22,6 +22,7 @@ async def _create_initial_group_schedule(group_id: str, supabase_admin) -> None:
             .single()
             .execute()
         )
+        #hello
         group = group_res.data
 
         # 2. Fetch all members of the group
