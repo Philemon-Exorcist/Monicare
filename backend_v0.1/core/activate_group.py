@@ -14,7 +14,20 @@ async def _create_initial_group_schedule(group_id: str, supabase_admin) -> None:
     Generates the initial payment schedule for all members of a newly activated group.
     """
     try:
-        # 1. Fetch group details needed for scheduling
+        # 1. Check if a schedule for the current round already exists to prevent duplicates.
+        group_round_res = supabase_admin.table("savings_groups").select("current_cycle_round").eq("group_id", group_id).single().execute()
+        current_round = group_round_res.data.get("current_cycle_round")
+
+        if not current_round:
+            logger.warning("Could not determine current round for group %s. Skipping schedule creation.", group_id)
+            return
+
+        existing_schedule_res = supabase_admin.table("group_schedules").select("id", count="exact").eq("group_id", group_id).eq("cycle_round", current_round).execute()
+        if existing_schedule_res.count > 0:
+            logger.info("Initial schedule for group %s, round %s already exists. Skipping creation.", group_id, current_round)
+            return
+
+        # 2. Fetch group details needed for scheduling
         group_res = (
             supabase_admin.table("savings_groups")
             .select("contribution_amount, cycle_period, current_cycle_round")
@@ -22,10 +35,9 @@ async def _create_initial_group_schedule(group_id: str, supabase_admin) -> None:
             .single()
             .execute()
         )
-        #hello
         group = group_res.data
 
-        # 2. Fetch all members of the group
+        # 3. Fetch all members of the group
         members_res = (
             supabase_admin.table("group_members")
             .select("user_id")
@@ -38,7 +50,7 @@ async def _create_initial_group_schedule(group_id: str, supabase_admin) -> None:
             logger.warning("Could not generate schedule for group %s: missing group or member data.", group_id)
             return
 
-        # 3. Prepare schedule entries for the first round
+        # 4. Prepare schedule entries for the first round
         amount_due = group["contribution_amount"]
         current_round = group["current_cycle_round"]
         
