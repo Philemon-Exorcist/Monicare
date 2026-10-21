@@ -45,13 +45,14 @@ class NombaTransferRequest(BaseModel):
 
 
 class AppSettings(BaseSettings):
-    NOMBA_BASE_URL: str
-    NOMBA_SANDBOX_URL: str
-    NOMBA_LIVE_CLIENT_ID: str = Field(
+    NOMBA_BASE_URL: Optional[str] = None
+    NOMBA_SANDBOX_URL: Optional[str] = None
+    NOMBA_LIVE_CLIENT_ID: Optional[str] = Field(
+        default=None,
         validation_alias=AliasChoices("NOMBA_LIVE_CLIENT_ID", "NOMBA_LIVE_ClIENT_ID")
     )
-    NOMBA_LIVE_PRIVATE_KEY: str = Field(alias="NOMBA_LIVE_PRIVATE_KEY")
-    Main_Account_ID: str
+    NOMBA_LIVE_PRIVATE_KEY: Optional[str] = None
+    Main_Account_ID: Optional[str] = None
     NOMBA_SUB_ACCOUNT_ID: Optional[str] = None
     NOMBA_WEBHOOK_SECRET: Optional[str] = Field(
         default=None,
@@ -66,7 +67,6 @@ class AppSettings(BaseSettings):
     )
 
 settings = AppSettings()
-
 
 
 

@@ -33,11 +33,12 @@ class NombaAPIClient:
 
     async def _get_oauth_token(self) -> str:
         """Retrieve and cache a bearer token for Nomba API calls."""
+        base_url = self._require_value(self.base_url, "NOMBA_BASE_URL")
         current_time = time.time()
         if self._cached_token and current_time < (self._token_expires_at - 60):
             return self._cached_token
 
-        url = f"{self.base_url}/v1/auth/token/issue"
+        url = f"{base_url}/v1/auth/token/issue"
         headers = {
             "Content-Type": "application/json",
             "accountId": self._require_value(self.parent_account_id, "Main_Account_ID"),
